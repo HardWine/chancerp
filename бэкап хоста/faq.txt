@@ -1,0 +1,52 @@
+Не следуют загружать файлы расширения .dll, они не играют никакую роль в Linux архитектуре.
+
+Ошибка при запуске ERROR - ошибка настройки server.cfg.
+
+В качесте текстового редактра рекомендуем Notepad++ или Sablime Text 3, не рекомендуем использовать Блокнот во избежании проблем с отображением.
+
+Пример настройки конфига и его комментирование:
+
+echo Executing Server Config...
+lanmode 0
+rcon_password T8FccbEj4z1Vcfuu  // устанавливайте сложный пароль для rcon консоли, либо вовсе отключите его строкой rcon 0
+maxplayers 1000     // Обязательная строка
+bind 0.0.0.0   		// Обязательная строка, IP вашего сервера
+port 7777		   // Обязательная строка
+hostname Name Server  // В названии сервера не используйте русские буквы, символы (кружки и т.д.)
+gamemode0 name 1 
+announce 1  // Видимость сервера во вкладке Internet (работает во всех версиях, кроме SA-MP 0.3.7)
+query 1
+weburl example.com
+maxnpc 1
+onfoot_rate 40
+incar_rate 40
+weapon_rate 40
+stream_distance 300.0
+stream_rate 1000
+plugins mysql_static.so streamer.so sscanf.so anti-freeze.so  // Плагины прописываются с расширением .so всегда!
+filterscripts
+
+Если в логе от сервера (server_log.txt) вы видите эту ошибку:
+[01:28:38] I couldn't load any gamemode scripts. Please verify your server.cfg
+[01:28:38] It needs a gamemode0 line at the very least.
+
+То пропишите название мода (/gamemodes/name.amx) в server.cfg в строку gamemode0, пример:
+gamemode0 name 1 
+
+
+Ошибка Unknown - ошибка прописывания плагинов в server.cfg или ошибка подключения к MySQL.
+1. Убедитесь, что плагины корректно прогрузились в логе (server_log.txt).
+2. Убедитесь, что плагин mysql.so или mysql_static.so имеют ту же версию, что инклуд.
+
+Для этого необходимо посмотреть версию инклуда (/pawno/inlude/a_mysql.inc). Например ваша версия R41, значит и плагин должен быть версии R41, какая версия плагина - указано в логе при запуске сервера.
+
+Скачать плагин нужной версии можно: https://github.com/pBlueG/SA-MP-MySQL/releases (Обязательно скачивайте Debian версию staic или в более ранних версиях Linux плагин, mysql_static.so).
+
+Правильная настройка подключения мода к MySQL:
+
+SQLHOST "127.0.0.1" // И никакой другой, ни localhost, ни IP от вашего игрового сервера, только 127.0.0.1!
+SQLUSER "gsID" // В панели указано.
+SQLDB "gsID"
+SQLPASSWORD "password" // Пароль.
+
+Если Вы вниматнльно ознакомились с инструкцией, проблем у вас не возникнет.

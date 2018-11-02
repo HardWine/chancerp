@@ -1,0 +1,151 @@
+-- Неверное наказание
+<p>
+	Здравствуйте. Если вы не согласны с выданным наказанием, то вы в полном праве <a href="https://talk.chancerp.ru/index.php?/forum/21-жалобы-на-команду-проекта/">оставить жалобу в соответствующей теме</a> (ссылка кликабельна), предварительно ознакомившись с <a href="https://talk.chancerp.ru/index.php?/topic/9-правила-написания-жалобы/">правилами подачи жалоб</a> (ссылка кликабельна).&nbsp;
+</p>
+
+<p style="background-color:#ffffff; color:#353c41; font-size:14px; text-align:start">
+	___<span>﻿</span>_________
+</p>
+
+<p style="background-color:#ffffff; color:#353c41; font-size:14px; text-align:start">
+	<strong>Ответ дан. Тема закрыта. Приятной игры<span><span><span><span><span>😉</span><span>﻿</span><span>﻿</span></span></span></span></span></strong>
+</p>
+
+
+-- Сообщение о баге
+<p>
+	Здравствуйте. В ближайшие время описанная Вами проблема будет исправлена. Приносим извинения за временные неудобства. С уважением, команда разработчиков Chance RP<span class="ipsEmoji">😉</span>
+</p>
+
+<p style="background-color:#ffffff; color:#353c41; font-size:14px; text-align:start">
+	___<span>﻿</span>_________
+</p>
+
+<p style="background-color:#ffffff; color:#353c41; font-size:14px; text-align:start">
+	<strong>Ответ дан. Тема закрыта. Приятной игры<span><span><span><span><span>😉</span><span>﻿</span><span>﻿</span></span></span></span></span></strong>
+</p>
+
+
+
+-- Невалидная почта при регистрации
+<p>
+	Здравствуйте. Нужно более серьезно относиться к защите Вашего, игрового аккаунта. Указывать только достоверные&nbsp;данный при регистрации аккаунта. Не устанавливать легкие пароли. К сожалению, администрация в данной ситуации не моем Вам помочь.
+</p>
+
+
+-- Вылет из игры
+<p>
+	Здравствуйте. Предлагаю <a href="https://vk.com/android.samp?w=wall-135044520_29173">выставить настройки графики, рекомендованные разработчиком клиента.</a>
+</p>
+
+
+-- правильная установка клиента
+<p>
+	Здравствуйте, предлагаю Вам воспользоваться следующей инструкцией:
+</p>
+
+<ol>
+	<li>
+		<span style="background-color: rgb(255, 255, 255); text-align: left;"><font color="#000000"><span style="font-size: 13px;">Переходим по пути Android/obb там будет папка com.rockstargames.gtasa переименовываем&nbsp;эту папку в com.rockstargames.gtasa1</span></font></span>
+	</li>
+	<li>
+		<span style="background-color:#ffffff; color:#000000; font-size:13px; text-align:left">Удаляем старый клиент сервера, то есть саму игру.</span>
+	</li>
+	<li>
+		<span style="background-color:#ffffff; color:#000000; font-size:13px; text-align:left">Устанавливаем новый апк сервера.</span>
+	</li>
+	<li>
+		<span style="background-color: rgb(255, 255, 255); text-align: left;"><font color="#000000"><span style="font-size: 13px;">Опять переходим по пути Android/obb, папку com.rockstargames.gtasa1 переименовываем&nbsp;в com.rockstargames.gtasa.</span></font></span>
+	</li>
+	<li>
+		<span style="background-color:#ffffff; color:#000000; font-size:13px; text-align:left">Заходим в игру, после выходим.</span>
+	</li>
+	<li>
+		<span style="background-color:#ffffff; color:#000000; font-size:13px; text-align:left">Теперь нужно распаковать папки которые были в zip архиве (SAMP и texdb) по пути Android/data/com.rockstargames.gtasa/files.</span>
+	</li>
+	<li>
+		<span style="background-color:#ffffff; color:#000000; font-size:13px; text-align:left">После того как выполнили все действия можно заходить и играть.</span>
+	</li>
+</ol>
+
+
+
+<p>
+	Здравствуйте.
+</p>
+
+<p>
+	<strong>Если вы столкнулись с вылетом игры во время игрового процесса:</strong>
+</p>
+
+<p>
+	&nbsp; Предлагаю <a href="https://vk.com/android.samp?w=wall-135044520_29173" rel="external nofollow">выставить настройки графики, рекомендованные разработчиком клиента.</a>
+</p>
+
+<p>
+	<strong>Если же проблему возникли при установке/обновление клиента:</strong>
+</p>
+
+<p>
+	&nbsp;
+</p>
+
+<ol>
+	<li>
+		<span style="background-color: rgb(255, 255, 255); text-align: left;"><font color="#000000"><span style="font-size: 13px;">Переходим по пути Android/obb там будет папка com.rockstargames.gtasa переименовываем&nbsp;эту папку в com.rockstargames.gtasa1</span></font></span>
+	</li>
+	<li>
+		<span style="background-color:#ffffff; color:#000000; font-size:13px; text-align:left">Удаляем старый клиент сервера, то есть саму игру.</span>
+	</li>
+	<li>
+		<span style="background-color:#ffffff; color:#000000; font-size:13px; text-align:left">Устанавливаем новый апк сервера.</span>
+	</li>
+	<li>
+		<span style="background-color: rgb(255, 255, 255); text-align: left;"><font color="#000000"><span style="font-size: 13px;">Опять переходим по пути Android/obb, папку com.rockstargames.gtasa1 переименовываем&nbsp;в com.rockstargames.gtasa.</span></font></span>
+	</li>
+	<li>
+		<span style="background-color:#ffffff; color:#000000; font-size:13px; text-align:left">Заходим в игру, после выходим.</span>
+	</li>
+	<li>
+		<span style="background-color:#ffffff; color:#000000; font-size:13px; text-align:left">Теперь нужно распаковать папки которые были в zip архиве (SAMP и texdb) по пути Android/data/com.rockstargames.gtasa/files.</span>
+	</li>
+	<li>
+		<span style="background-color:#ffffff; color:#000000; font-size:13px; text-align:left">После того как выполнили все действия можно заходить и играть.</span>
+	</li>
+</ol>
+
+<p>
+	&nbsp;
+</p>
+
+<p>
+	<strong>Ответ дан. Тема закрыта. Приятной игры<span class="ipsEmoji">😉</span></strong>
+</p>
+
+
+-- Улучшения по предложению проекта
+<p>
+	Здравствуйте. Для предложений по улучшению сервер существует <a href="https://talk.chancerp.ru/index.php?/forum/7-предложения-по-улучшению/">специальный раздел (текст кликабелен)</a>
+</p>
+
+<p style="background-color:#ffffff; color:#353c41; font-size:14px; text-align:start">
+	____________
+</p>
+
+<p style="background-color:#ffffff; color:#353c41; font-size:14px; text-align:start">
+	<strong>Ответ дан. Тема закрыта. Приятной игры<span><span><span>😉</span></span></span></strong>
+</p>
+
+
+-- Востановлене пароля
+<p>
+	Здравствуйте. Для смена пароля необходимо воспользоваться <a href="https://chancerp.ru/password_restore">следующей формой (текст кликабелен)</a>
+</p>
+
+<p style="background-color:#ffffff; color:#353c41; font-size:14px; text-align:start">
+	____________
+</p>
+
+<p style="background-color:#ffffff; color:#353c41; font-size:14px; text-align:start">
+	<strong>Ответ дан. Тема закрыта. Приятной игры<span><span><span>😉</span></span></span></strong>
+</p>

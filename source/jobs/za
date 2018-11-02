@@ -1,0 +1,4 @@
+SELECT (SUM(  `sum` ) /100) * 10 AS Andrey, (SUM(  `sum` ) /100) * 15 AS Evgeniy
+FROM  `freekassa_payments` 
+WHERE  `dateCreate` >=  '2018-10-10 00:00:00'
+LIMIT 0 , 30
