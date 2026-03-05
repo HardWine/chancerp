@@ -1,0 +1,8 @@
+<?xml version="1.0"?>
+<business>
+    <biz id = "1" title = "Магазин 24/7">
+        <enter_x = "1833.78"/>
+        <enter_y = "-1842.6"/>
+        <enter_z = "13.5781"/>
+    </biz>
+</business>

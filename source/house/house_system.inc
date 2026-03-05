@@ -5,6 +5,7 @@
 #define house_system_included
 
 #include <house/house_header>
+#include <house/house_show>
 #include <house/house_api>
 
 #include <YSI-Include\YSI\YSI\y_hooks>

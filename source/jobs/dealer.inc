@@ -16,14 +16,12 @@
 
 #define MAX_PLACE_SELL	41
 
-new TOTAL_DRUGS;
+new TOTAL_DRUGS = 7000;
 new Text3D:totaldrug;
-new drug_amount[MAX_PLAYERS];
-new buydrugs_Timer[MAX_PLAYERS];
 new point_sell[41];
 new drug_string[90];
 new drughouse;
-
+new drughouse_z;
 enum placesell
 	{
 		Float: cor_X,
@@ -83,37 +81,53 @@ stock get_drugs(playerid) {
 	Fraction:fractionid = GetPlayerFraction(playerid);
 	if(fractionid > FRACTION_LSPD && fractionid < FRACTION_RUSSIAN_MAFIA) 
 	{
-		if(TOTAL_DRUGS <= 0) TOTAL_DRUGS = 0;
+		if(GetPlayerJobDayStatus(playerid) == false)
+		{
+			return SendClientMessage(playerid, -1, MSG_START_JOB_DAY);
+		}
+		
+		if(TOTAL_DRUGS < 0) TOTAL_DRUGS = 0;
+		if(PlayerInfo[playerid][pDrugsSell] > 0) return SendClientMessage(playerid, -1, ""COLOR_RED"Доставь прошлую партию до конца, а потом приходи!");
 		if(TOTAL_DRUGS < 15) return SendClientMessage(playerid, -1, ""COLOR_RED"В притоне недостаточно наркотиков");
-		if(drug_amount[playerid] > 0) return SendClientMessage(playerid, -1, ""COLOR_RED"У Вас максимальное кол-во наркотиков");
 		format(drug_string, sizeof(drug_string), ""COLOR_BLUE"Склад притона: {FFFFFF}%dгр.",TOTAL_DRUGS);
-		SendClientMessage(playerid, -1, drug_string);
-		drug_amount[playerid] = 0;
-		format(drug_string, sizeof(drug_string), "Цена за 1 гр. наркотиков составляет %d EXP", DRUG_BUY_PRICE);
 		SendClientMessage(playerid, -1, drug_string);
 
 		if(CheckCash(playerid, DRUG_BUY_PRICE*MAX_DRUGS) == false) return 1;
 		
-		SendClientMessage(playerid, -1, ""COLOR_ORANGE"Через 10 секунд вы закупите партию из 15 гр. наркотиков");
-		SendClientMessage(playerid, -1, ""COLOR_ORANGE"Чтобы отменить это действие - покиньте пикап");
-		buydrugs_Timer[playerid] = SetTimerEx("get_drugs_accepted", 10000, false, "d", playerid);
+		SPD(playerid, dDrugHouse, DIALOG_STYLE_MSGBOX, "Наркоторговля", "{FFFFFF}Здесь вы можете закупить партию наркотиков,которую \nбудет необходимо развезти по всему городу Los Santos\n Ваша прибыль составит около 34 процентов от суммы закупки\n\n"COLOR_GREEN"Цена закупки партии: {FFFFFF}495 EXP\n\n"COLOR_ORANGE"Начать и прервать доставку вы сможете в любое время,\nданные наркотики не пропадут пока вы их не доставите", "Купить", "Отмена");
 	}
 	return 1;
 }
 
 stock update_drug_text() {
 
- 	format(drug_string, sizeof(drug_string), ""COLOR_BLUE"Склад: {FFFFFF}%dгр.", TOTAL_DRUGS);
+ 	format(drug_string, sizeof(drug_string), ""COLOR_BLUE"Склад: {FFFFFF}%d пакетов", TOTAL_DRUGS);
 	Update3DTextLabelText(totaldrug, 0xFFFFFFFF, drug_string);
 }
 
 stock get_drugs_delivred(playerid)	{
-	PlayerInfo[playerid][pWanted] += 90;
+	PlayerInfo[playerid][pWanted] += 150;
+	SetPlayerWanted(playerid, PlayerInfo[playerid][pWanted]);
 	SetPlayerInt(playerid, "Wanted", PlayerInfo[playerid][pWanted]);
-	Player.AddEXP(PlayerInfo[playerid][pID], DRUG_SELL_PRICE, E_JOB_DRUGS, playerid);
-	drug_amount[playerid]--;
-    if(drug_amount[playerid] <= 0) {
-    drug_amount[playerid] = 0;
+
+	AddPlayerEXP(playerid, DRUG_SELL_PRICE, "Доставка наркотиков");
+
+	PlayerInfo[playerid][pDrugsSell] --;
+	AddPlayerAchievement(playerid, E_DRUG_TRAFFICKET);
+	SetPlayerInt(playerid, "DrugsSell", PlayerInfo[playerid][pDrugsSell]);
+    if(PlayerInfo[playerid][pDrugsSell]  <= 0) {
+	    PlayerInfo[playerid][pDrugsSell]  = 0;
+	    SetPlayerInt(playerid, "DrugsSell", PlayerInfo[playerid][pDrugsSell]);
+	    SetPVarInt(playerid, "deliver_started", 0);
+	    IncreaseStatus(playerid, 1);
+	    SendClientMessage(playerid, -1, ""COLOR_GREEN"Ты доставил все наркотики");
+		for(new i = 0; i < MAX_PLACE_SELL; i++) {
+			if(IsValidDynamicCP(point_sell[i])) {
+				TogglePlayerDynamicCP(playerid, point_sell[i], false);
+			}
+		}
+		return 1;
+	}
 	
 	DecreaseKarma(playerid);
 
@@ -130,62 +144,54 @@ stock get_drugs_delivred(playerid)	{
 		case 9: SendClientMessage(playerid, C_CHAT, "- Покупатель: Надеюсь это не мука!");
 	}
 
-    SendClientMessage(playerid, -1, ""COLOR_GREEN"Ты доставил все наркотики");
-	for(new i = 0; i < MAX_PLACE_SELL; i++)
-	{
-		if(IsValidDynamicCP(point_sell[i])) {
-			TogglePlayerDynamicCP(playerid, point_sell[i], false);
-		}
-	}
-
-	format(drug_string, sizeof(drug_string), ""COLOR_BLUE"Получено с продаж: "COLOR_WHITE"%d EXP", DRUG_SELL_PRICE*MAX_DRUGS);
-	SendClientMessage(playerid, -1, drug_string);
-	return 1;
-    }
-
 	format(drug_string, sizeof(drug_string), ""COLOR_BLUE"Получено: "COLOR_WHITE"%d EXP", DRUG_SELL_PRICE);
 	SendClientMessage(playerid, -1, drug_string);
-	format(drug_string, sizeof(drug_string), ""COLOR_BLUE"Осталось доставить: {FFFFFF}%d грамм", drug_amount[playerid]);
+	format(drug_string, sizeof(drug_string), ""COLOR_BLUE"Осталось доставить: {FFFFFF}%d пакетов", PlayerInfo[playerid][pDrugsSell]);
 	SendClientMessage(playerid, -1, drug_string);
 	return 1;
 }
 
-	forward get_drugs_accepted(playerid);
-	public get_drugs_accepted(playerid) {
-	if(IsValidTimer(buydrugs_Timer[playerid]))
-	{
-		KillTimer(buydrugs_Timer[playerid]);
-		buydrugs_Timer[playerid] = 0;
-	}
+forward get_drugs_accepted(playerid);
+public get_drugs_accepted(playerid) {
+
 	if(TOTAL_DRUGS < 15) return SendClientMessage(playerid, -1, ""COLOR_RED"В притоне недостаточно наркотиков");
  	if(!IsPlayerInRangeOfPoint(playerid, 2.2, 2178.9387,-1660.8270,14.9413)) return 1;
-	if(drug_amount[playerid] >= MAX_DRUGS) return SendClientMessage(playerid, -1, ""COLOR_RED"У Вас максимальное кол-во наркотиков");
+	if(PlayerInfo[playerid][pDrugsSell]  >= MAX_DRUGS) return SendClientMessage(playerid, -1, ""COLOR_RED"У Вас максимальное кол-во наркотиков");
 
 	if(CheckCash(playerid, DRUG_BUY_PRICE*MAX_DRUGS) == false) return 1;
-	Player.DownEXP(PlayerInfo[playerid][pID], DRUG_BUY_PRICE*MAX_DRUGS, E_BUY_DRUGS_JOB, playerid);
+	RemovePlayerEXP(playerid, DRUG_BUY_PRICE*MAX_DRUGS, "Работа дилера. Покупка наркотиков");
 	TOTAL_DRUGS -= 15;
 
 	update_drug_text();
 
-	drug_amount[playerid] += MAX_DRUGS;
+	PlayerInfo[playerid][pDrugsSell] += MAX_DRUGS;
+	SetPlayerInt(playerid, "DrugsSell", PlayerInfo[playerid][pDrugsSell]);
 
-	format(drug_string, sizeof(drug_string), ""COLOR_BLUE"Вы закупили 15 гр. наркотиков за %d EXP", DRUG_BUY_PRICE*MAX_DRUGS);
+	format(drug_string, sizeof(drug_string), ""COLOR_BLUE"Вы закупили 15 пакетов за %d EXP", DRUG_BUY_PRICE*MAX_DRUGS);
 	SendClientMessage(playerid, -1, drug_string);
 	SendClientMessage(playerid, -1, ""COLOR_BLUE"Ваша задача: "COLOR_WHITE"Развозить наркотики по гетто");
-
+	SendClientMessage(playerid, -1, ""COLOR_BLUE"Чтобы начать введите: {FFFFFF}/deliver");
+	return 1;
+}
+CMD:deliver(playerid, params[]) {
+	if(GetPVarInt(playerid, "deliver_started") == 1) return 1;
+	if(PlayerInfo[playerid][pDrugsSell] > 0 && IsAGang(playerid) == 1) {	
 	for(new i = 0; i < MAX_PLACE_SELL; i++) {
 		if(IsValidDynamicCP(point_sell[i])) {
 			TogglePlayerDynamicCP(playerid, point_sell[i], true);
 		}
 	}
+	SetPVarInt(playerid, "deliver_started", 1);
+	SendClientMessage(playerid, -1, ""COLOR_RED"Вы начали доставку наркотиков");
+	}
 	return 1;
 }
-
 stock Dealer_OnGameModeInit() {
 	totaldrug = Create3DTextLabel("_", 0xFFFFFFFF, 2178.9387,-1660.8270,14.9413+1, 40, 0);
-	TOTAL_DRUGS = 45;
+	TOTAL_DRUGS = 150000;
 	update_drug_text();
-	drughouse = CreateDynamicPickup(1279, 2, 2178.9387,-1660.8270,14.9413);
+	drughouse = CreateDynamicPickup(1279, 1, 2178.9387,-1660.8270,14.9413);
+	drughouse_z = CreateDynamicCylinder(2178.9387,-1660.8270, 14, 15, 1);
 
 	for(new i = 0; i < MAX_PLACE_SELL; i++) {
 		point_sell[i] = CreateDynamicCP(DrugSale[i][cor_X], DrugSale[i][cor_Y], DrugSale[i][cor_Z], 1.5, -1, -1, -1, 60);
@@ -198,23 +204,16 @@ stock Dealer_OnPlayerEnterDynamicCP(playerid, checkpointid) {
 	{
 		if(checkpointid == point_sell[i] && IsValidDynamicCP(checkpointid))
 		{
-		    get_drugs_delivred(playerid);
 			TogglePlayerDynamicCP(playerid, point_sell[i], false);
+			Streamer_Update(playerid, STREAMER_TYPE_CP);
+		    get_drugs_delivred(playerid);
 			return 1;
 		}
 	}
 	return 0;
 }
-stock Dealer_OP_PickUpDynamicPickup(playerid, pickupid) {
-	if(pickupid == drughouse) {
-		get_drugs(playerid);
-		return 1;
-	}
-	return 0;
-}
 
 stock Dealer_OnPlayerConnect(playerid) {
-	drug_amount[playerid] = 0;
 
 	for(new i = 0; i < MAX_PLACE_SELL; i++) {
 		if(IsValidDynamicCP(point_sell[i])) {
@@ -227,13 +226,6 @@ stock Dealer_OnPlayerConnect(playerid) {
 
 stock Dealer_OnPlayerDisconnect(playerid, reason) {
 	#pragma unused reason
-    drug_amount[playerid] = 0;
-	if(IsValidTimer(buydrugs_Timer[playerid]))
-	{
-		KillTimer(buydrugs_Timer[playerid]);
-		buydrugs_Timer[playerid] = -1;
-	}
-
 	for(new i = 0; i < MAX_PLACE_SELL; i++) {
 		if(IsValidDynamicCP(point_sell[i])) {
 			TogglePlayerDynamicCP(playerid, point_sell[i], false);

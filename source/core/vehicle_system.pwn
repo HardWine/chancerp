@@ -34,7 +34,9 @@ enum {
 	VO_FRACTION_LSPD, // Организаций - LSPD
 	VO_FRACTION_GOVERMENT, // Организаций - Правительство
 	VO_FRACTION_FBI, // Организаций - FBI
-	VO_FRACTION_ARMY // Организаций - Армия
+	VO_FRACTION_ARMY, // Организаций - Армия
+	VO_FRACTION_NEWS, // Организаций - San News
+	VO_TRUCKER
 };
 
 enum 
@@ -55,7 +57,7 @@ enum
 	};
 
 new 
-	VehicleInfo[250][vehicle_info__];
+	VehicleInfo[300][vehicle_info__];
 
 public Vehicle_OnGameModeInit() {
 	for(new i = 0; i < sizeof(VehicleInfo); i++) {
@@ -71,6 +73,7 @@ public LoadVehicle() {
 
 	if(rows) {
 		for(new i = 0; i < rows; i++) {
+
 			VehicleInfo[i][VI_ID] = cache_get_field_content_int(i, "ID");
 			VehicleInfo[i][VI_ModelID] = cache_get_field_content_int(i, "ModelID");
 			VehicleInfo[i][VI_Owner] = cache_get_field_content_int(i, "Own");
@@ -87,17 +90,18 @@ public LoadVehicle() {
 			VehicleInfo[i][VI_Color1] = cache_get_field_content_int(i, "Color_1");
 			VehicleInfo[i][VI_Color2] = cache_get_field_content_int(i, "Color_2");
 			VehicleInfo[i][VI_RespawnTime] = cache_get_field_content_int(i, "RespawnTime");
-
+			
+			printf("\tcore AddStaticVehicleEx");
 			VehicleInfo[i][VI_VehicleID] = AddStaticVehicleEx(VehicleInfo[i][VI_ModelID], 
 				VehicleInfo[i][VI_X], VehicleInfo[i][VI_Y], VehicleInfo[i][VI_Z], VehicleInfo[i][VI_Angle], 
 				VehicleInfo[i][VI_Color1], VehicleInfo[i][VI_Color2], VehicleInfo[i][VI_RespawnTime]
 			);
+			AddVehicleToIterator(VehicleInfo[i][VI_VehicleID]);
 			LinkVehicleToInterior(VehicleInfo[i][VI_VehicleID], VehicleInfo[i][VI_Inter]);
 			SetVehicleVirtualWorld(VehicleInfo[i][VI_VehicleID], VehicleInfo[i][VI_World]);
 		}
 	}
 }
-
 public Vehicle_OnPlayerEnterVehicle(playerid, vehicleid) {
 	new 
 		Fraction: fractionid = GetPlayerFraction(playerid),
@@ -108,28 +112,8 @@ public Vehicle_OnPlayerEnterVehicle(playerid, vehicleid) {
 			vehicle_owner = VehicleInfo[i][VI_Owner];
 
 			if(vehicle_owner == VO_FREE) {
-				// if(PlayerInfo[playerid][pLicense] == 0)
-				// {
-				//     SendClientMessage(playerid, -1, ""COLOR_RED"У Вас нет водительских прав");
-				//     SendClientMessage(playerid, -1, ""COLOR_RED"Получить лицензию можно в Автошколе Сан-Фиерро");
-				//     return 0;
-				// }
 				return 1;
-			} else if(vehicle_owner == VO_TAXI) {
-				if(GetPVarInt(playerid, "tempjob") > 0) {
-					SendClientMessage(playerid, -1, "Вы уже устроены на другую работу");
-					RemovePlayerFromVehicle(playerid);
-					return 0;
-				}
-	    		if(fractionid != FRACTION_NONE) {
-	    			SendClientMessage(playerid, -1, ""COLOR_RED"Вы состоите во фракции");
-					RemovePlayerFromVehicle(playerid);
-					return 0;
-				}
-				SendClientMessage(playerid, -1, ""COLOR_GREEN"Вы начали работу водителем такси. Ваша задача перевозить пассажиров");
-				SendClientMessage(playerid, -1, ""COLOR_GREEN"За каждого пассажира вы получите зарплату в начале следующего часа");
-				return 1;
-			} else if(vehicle_owner == VO_GIVE_LIC) {
+			} 	else if(vehicle_owner == VO_GIVE_LIC) {
 				if(GetPVarInt(playerid,"GetLic") == 1)
 				{
 					SendClientMessage(playerid, -1, ""COLOR_ORANGE"Вы начали сдавать на права. Соблюдайте правила дорожного движения!");
@@ -145,6 +129,7 @@ public Vehicle_OnPlayerEnterVehicle(playerid, vehicleid) {
 				 	Route3[playerid] = -1;
 				 	Route[playerid] = -1;
 				 	ArmyMission[playerid] = -1;
+				 	RouteLSPD[playerid] = -1;
 				 	return 5;
 				} else {
 					return 0;
@@ -165,23 +150,31 @@ public Vehicle_OnPlayerEnterVehicle(playerid, vehicleid) {
 				 	Route3[playerid] = -1;
 				 	Route[playerid] = -1;
 				 	ArmyMission[playerid] = -1;
+				 	RouteLSPD[playerid] = -1;
 				 	return 5;
 				} else {
 					return 0;
 				}
-			} else if(vehicle_owner == VO_JOB_TRASH) {
-				if(fractionid != FRACTION_NONE) {
-	    			SendClientMessage(playerid, -1, ""COLOR_RED"Вы состоите во фракции");
+			} else if(vehicle_owner == VO_TRUCKER) {
+				if(!GetPVarInt(playerid, "trucker") || fractionid != FRACTION_NONE) {
+					SendClientMessage(playerid, -1, ""COLOR_RED"Вы не дальнобойщик");
 					RemovePlayerFromVehicle(playerid);
 					return 0;
+				} else {
+					Dialog_Show(playerid, Dialog:trucker_get_way);
 				}
+			} else if(vehicle_owner == VO_JOB_TRASH) {
 				if(GetPVarInt(playerid, "tempjob") != 2) {
 					SendClientMessage(playerid, -1, "Необходимо начать рабочий день");
 					RemovePlayerFromVehicle(playerid);
 					return 0;
 				}
 				SetPVarInt(playerid,"tempjob", 2);
-				SelectBin(playerid);
+				
+				if(gonecar[playerid] != INVALID_VEHICLE_ID) {
+					ReturnTimerID[playerid] = KillTimer(ReturnTimerID[playerid]);
+					gonecar[playerid] = INVALID_VEHICLE_ID;	
+				} else {
 				ArmyMission[playerid] = -1;
 				RouteTrash[playerid] = 1;
 				RouteFarm[playerid] = -1;
@@ -193,10 +186,13 @@ public Vehicle_OnPlayerEnterVehicle(playerid, vehicleid) {
 			 	RouteLicAir[playerid] = -1;
 			 	RouteAir[playerid] = -1;
 			 	RouteAir2[playerid] = -1;
+			 	RouteLSPD[playerid] = -1;
 				SendClientMessage(playerid, -1, ""COLOR_ORANGE"Отправляйтесь в указанное на карте место");
+				SelectBin(playerid);
+				}
 			 	return 1;
 			} else if(vehicle_owner == VO_BUS_LS) {
-				if(fractionid != FRACTION_NONE) {
+				if(fractionid != FRACTION_NONE && GetPlayerJobDayStatus(playerid) == true) {
 	    			SendClientMessage(playerid, -1, ""COLOR_RED"Вы состоите во фракции!");
 					RemovePlayerFromVehicle(playerid);
 					return 0;
@@ -206,10 +202,15 @@ public Vehicle_OnPlayerEnterVehicle(playerid, vehicleid) {
 					RemovePlayerFromVehicle(playerid);
 					return 0;
 				}
-				SendClientMessage(playerid, -1, ""COLOR_GREEN"Вы начали работу водителем автобуса");
-				SendClientMessage(playerid, -1, ""COLOR_GREEN"Увеличивая скилл водителя вы получите больше EXP!");
-				SendClientMessage(playerid, -1, ""COLOR_RED"Покинув автобус вы потеряете навык водителя");
-			 	SetPlayerRaceCheckpoint(playerid, 0, 1130.6526,-1743.5892,13.1755, 1172.6687,-1770.6853,13.1796, 5); //
+				if(GetVehicleModel(GetPlayerVehicleID(playerid)) == 437 && PlayerInfo[playerid][pBusSkill] < 200) {
+					SendClientMessage(playerid, -1, ""COLOR_ORANGE"Данный автобус Вам откроется начиная с "COLOR_GREEN"200 скилла"COLOR_ORANGE" водителя автобуса.");
+					return 0;
+				}
+				if(gonecar[playerid] != INVALID_VEHICLE_ID) {
+					ReturnTimerID[playerid] = KillTimer(ReturnTimerID[playerid]);
+					gonecar[playerid] = INVALID_VEHICLE_ID;	
+				} else {
+			 	SetPlayerRaceCheckpoint(playerid, 1, 1109.9004, -1743.4004, 13.4, 1163.7, -1743.7, 13.4, 5);
 			 	Route[playerid] = 1;
 			 	RouteTrash[playerid] = -1;
 			 	RouteFarm[playerid] = -1;
@@ -221,9 +222,14 @@ public Vehicle_OnPlayerEnterVehicle(playerid, vehicleid) {
 			 	RouteLicAir[playerid] = -1;
 			 	RouteAir[playerid] = -1;
 			 	RouteAir2[playerid] = -1;
+			 	RouteLSPD[playerid] = -1;
+				SendClientMessage(playerid, -1, ""COLOR_GREEN"Вы начали работу водителем автобуса");
+				SendClientMessage(playerid, -1, ""COLOR_GREEN"Увеличивая скилл водителя вы получите больше EXP!");
+				SendClientMessage(playerid, -1, ""COLOR_RED"Покинув автобус вы потеряете навык водителя");
+			 	}
 			 	return 1;
 			} else if(vehicle_owner == VO_BUS_LV) {
-				if(fractionid != FRACTION_NONE) {
+				if(fractionid != FRACTION_NONE && GetPlayerJobDayStatus(playerid) == true) {
 	    			SendClientMessage(playerid, -1, ""COLOR_RED"Вы состоите во фракции!");
 					RemovePlayerFromVehicle(playerid);
 					return 0;
@@ -233,6 +239,14 @@ public Vehicle_OnPlayerEnterVehicle(playerid, vehicleid) {
 					RemovePlayerFromVehicle(playerid);
 					return 0;
 				}
+				if(GetVehicleModel(GetPlayerVehicleID(playerid)) == 437 && PlayerInfo[playerid][pBusSkill] < 200) {
+					SendClientMessage(playerid, -1, ""COLOR_ORANGE"Данный автобус Вам откроется начиная с "COLOR_GREEN"200 скилла"COLOR_ORANGE" водителя автобуса.");
+					return 0;
+				}
+				if(gonecar[playerid] != INVALID_VEHICLE_ID) {
+					ReturnTimerID[playerid] = KillTimer(ReturnTimerID[playerid]);
+					gonecar[playerid] = INVALID_VEHICLE_ID;	
+				} else {
 		 		RouteAir2[playerid] = -1;
 				SendClientMessage(playerid, -1, ""COLOR_GREEN"Вы начали работу водителем автобуса");
 				SendClientMessage(playerid, -1, ""COLOR_GREEN"Увеличивая скилл водителя вы получите больше EXP!");
@@ -249,9 +263,11 @@ public Vehicle_OnPlayerEnterVehicle(playerid, vehicleid) {
 			 	RouteLicAir[playerid] = -1;
 			 	RouteAir[playerid] = -1;
 			 	RouteAir2[playerid] = -1;
+			 	RouteLSPD[playerid] = -1;
+			 	}
 			 	return 1;
 			} else if(vehicle_owner == VO_BUS_SF) {
-				if(fractionid != FRACTION_NONE) {
+				if(fractionid != FRACTION_NONE && GetPlayerJobDayStatus(playerid) == true) {
 	    			SendClientMessage(playerid, -1, ""COLOR_RED"Вы состоите во фракции!");
 					RemovePlayerFromVehicle(playerid);
 					return 0;
@@ -261,11 +277,18 @@ public Vehicle_OnPlayerEnterVehicle(playerid, vehicleid) {
 					RemovePlayerFromVehicle(playerid);
 					return 0;
 				}
+				if(GetVehicleModel(GetPlayerVehicleID(playerid)) == 437 && PlayerInfo[playerid][pBusSkill] < 200) {
+					SendClientMessage(playerid, -1, ""COLOR_ORANGE"Данный автобус Вам откроется начиная с "COLOR_GREEN"200 скилла"COLOR_ORANGE" водителя автобуса.");
+					return 0;
+				}
+				if(gonecar[playerid] != INVALID_VEHICLE_ID) {
+					ReturnTimerID[playerid] = KillTimer(ReturnTimerID[playerid]);
+					gonecar[playerid] = INVALID_VEHICLE_ID;	
+				} else {
 		 		SendClientMessage(playerid, -1, ""COLOR_GREEN"Вы начали работу водителем автобуса");
 				SendClientMessage(playerid, -1, ""COLOR_GREEN"Увеличивая скилл водителя вы получите больше EXP!");
 				SendClientMessage(playerid, -1, ""COLOR_RED"Покинув автобус вы потеряете навык водителя");
 			 	SetPlayerRaceCheckpoint(playerid, 1,-1988.6450,138.3930,27.2461,-1988.6450,138.3930,27.2461, 5);
-
 			 	Route3[playerid] = 1;
 			 	RouteTrash[playerid] = -1;
 			 	RouteFarm[playerid] = -1;
@@ -277,6 +300,8 @@ public Vehicle_OnPlayerEnterVehicle(playerid, vehicleid) {
 			 	RouteLicAir[playerid] = -1;
 			 	RouteAir[playerid] = -1;
 			 	RouteAir2[playerid] = -1;
+			 	RouteLSPD[playerid] = -1;
+			 	}
 			 	return 1;
 			}
 			else if(vehicle_owner == VO_FRACTION_GROOVE) {
@@ -285,87 +310,198 @@ public Vehicle_OnPlayerEnterVehicle(playerid, vehicleid) {
 					RemovePlayerFromVehicle(playerid);	
 					return 0;
 				}
-				return 1;
+				else
+				{
+					if(GetPlayerJobDayStatus(playerid) == false)
+					{
+						RemovePlayerFromVehicle(playerid);
+						SendClientMessage(playerid, -1, MSG_START_JOB_DAY);
+						return 0;
+					}
+					return 1;
+				}
 			} else if(vehicle_owner == VO_FRACTION_RUSSIAN_MAFIA) {
 				if(fractionid != FRACTION_RUSSIAN_MAFIA) {
 				    SendClientMessage(playerid, -1, ""COLOR_RED"Вы не состоите в Russian Mafia");
 					RemovePlayerFromVehicle(playerid);
 					return 0;
 				}
-				return 1;
+				else
+				{
+					if(GetPlayerJobDayStatus(playerid) == false)
+					{
+						RemovePlayerFromVehicle(playerid);
+						SendClientMessage(playerid, -1, MSG_START_JOB_DAY);
+						return 0;
+					}
+					return 1;
+				}
 			} else if(vehicle_owner == VO_FRACTION_TRIADA) {
 				if(fractionid != FRACTION_TRIADA) {
 				    SendClientMessage(playerid, -1, ""COLOR_RED"Вы не состоите в Triads");
 					RemovePlayerFromVehicle(playerid);
 					return 0;
 				}
-				return 1;
+				else
+				{
+					if(GetPlayerJobDayStatus(playerid) == false)
+					{
+						RemovePlayerFromVehicle(playerid);
+						SendClientMessage(playerid, -1, MSG_START_JOB_DAY);
+						return 0;
+					}
+					return 1;
+				}
 			} else if(vehicle_owner == VO_FRACTION_DN_BOYS) {
 				if(fractionid != FRACTION_DN_BOYS) {
 				    SendClientMessage(playerid, -1, ""COLOR_RED"Вы не состоите в Da Nang Boys");
 					RemovePlayerFromVehicle(playerid);
 					return 0;
 				}
-				return 1;
+				else
+				{
+					if(GetPlayerJobDayStatus(playerid) == false)
+					{
+						RemovePlayerFromVehicle(playerid);
+						SendClientMessage(playerid, -1, MSG_START_JOB_DAY);
+						return 0;
+					}
+					return 1;
+				}
 			} else if(vehicle_owner == VO_FRACTION_BALLAS) {
 				if(fractionid != FRACTION_BALLAS) {
 				    SendClientMessage(playerid, -1, ""COLOR_RED"Вы не состоите в Ballas Gang");
 					RemovePlayerFromVehicle(playerid);
 					return 0;
 				}
-				return 1;
+				else
+				{
+					if(GetPlayerJobDayStatus(playerid) == false)
+					{
+						RemovePlayerFromVehicle(playerid);
+						SendClientMessage(playerid, -1, MSG_START_JOB_DAY);
+						return 0;
+					}
+					return 1;
+				}
 			} else if(vehicle_owner == VO_FRACTION_AZTECAS) {
 				if(fractionid != FRACTION_AZTECAS) {
 				    SendClientMessage(playerid, -1, ""COLOR_RED"Вы не состоите в Aztecas");
 					RemovePlayerFromVehicle(playerid);
 					return 0;
 				}
-				return 1;
+				else
+				{
+					if(GetPlayerJobDayStatus(playerid) == false)
+					{
+						RemovePlayerFromVehicle(playerid);
+						SendClientMessage(playerid, -1, MSG_START_JOB_DAY);
+						return 0;
+					}
+					return 1;
+				}
 			} else if(vehicle_owner == VO_FRACTION_VAGOS) {
 				if(fractionid != FRACTION_VAGOS) {
 				    SendClientMessage(playerid, -1, ""COLOR_RED"Вы не состоите в Vagos Gang");
 					RemovePlayerFromVehicle(playerid);
 					return 0;
 				}
-				return 1;
+				else
+				{
+					if(GetPlayerJobDayStatus(playerid) == false)
+					{
+						RemovePlayerFromVehicle(playerid);
+						SendClientMessage(playerid, -1, MSG_START_JOB_DAY);
+						return 0;
+					}
+					return 1;
+				}
 			} else if(vehicle_owner == VO_FRACTION_RIFA) {
 				if(fractionid != FRACTION_RIFA) {
 				    SendClientMessage(playerid, -1, ""COLOR_RED"Вы не состоите в Rifa Gang");
 					RemovePlayerFromVehicle(playerid);
 					return 0;
 				}
-				return 1;
+				else
+				{
+					if(GetPlayerJobDayStatus(playerid) == false)
+					{
+						RemovePlayerFromVehicle(playerid);
+						SendClientMessage(playerid, -1, MSG_START_JOB_DAY);
+						return 0;
+					}
+					return 1;
+				}
 			} else if(vehicle_owner == VO_FRACTION_LSPD) {
 				if(fractionid != FRACTION_LSPD) {
 				    SendClientMessage(playerid, -1, ""COLOR_RED"Вы не полицейский");
 					RemovePlayerFromVehicle(playerid);
 					return 0;
 				}
-				return 1;
+				if(GetPlayerJobDayStatus(playerid) == false)
+				{
+					RemovePlayerFromVehicle(playerid);
+					SendClientMessage(playerid, -1, MSG_START_JOB_DAY);
+					return 0;
+				}
+				if(RouteLSPD[playerid] == -1) DisablePlayerRaceCheckpoint(playerid);
+				if(GetPVarInt(playerid, "turnout_mes") == 1) return 1;
+				SendClientMessage(playerid, -1, ""COLOR_BLUE"Чтобы заступить на патруль используйте:{FFFFFF} /turnout");
+				SetPVarInt(playerid, "turnout_mes", 1);
+				
 			} else if(vehicle_owner == VO_FRACTION_GOVERMENT) {
 				if(fractionid != FRACTION_GOVERMENT) {
-				    SendClientMessage(playerid, -1, ""COLOR_RED"Вы не работаете в Мэрии");
+				    SendClientMessage(playerid, -1, ""COLOR_RED"Вы не работаете в Правительстве");
 					RemovePlayerFromVehicle(playerid);
 					return 0;
 				}
-				return 1;
+				else
+				{
+					if(GetPlayerJobDayStatus(playerid) == false)
+					{
+						RemovePlayerFromVehicle(playerid);
+						SendClientMessage(playerid, -1, MSG_START_JOB_DAY);
+						return 0;
+					}
+					return 1;
+				}
 			} else if(vehicle_owner == VO_FRACTION_FBI) {
 				if(fractionid != FRACTION_FBI) {
 				    SendClientMessage(playerid, -1, ""COLOR_RED"Вы не агент FBI");
 					RemovePlayerFromVehicle(playerid);
 					return 0;
 				}
-				return 1;
+				else
+				{
+					if(GetPlayerJobDayStatus(playerid) == false)
+					{
+						RemovePlayerFromVehicle(playerid);
+						SendClientMessage(playerid, -1, MSG_START_JOB_DAY);
+						return 0;
+					}
+					return 1;
+				}
 			} else if(vehicle_owner == VO_FRACTION_ARMY) {
 				if(fractionid != FRACTION_ARMY) {
 				    SendClientMessage(playerid, -1, ""COLOR_RED"Вы не военный");
 					RemovePlayerFromVehicle(playerid);
 					return 0;
 				}
-
-				if(GetVehicleModel(vehicleid) == 433 || GetVehicleModel(vehicleid) == 548) {
+				if(GetPlayerJobDayStatus(playerid) == false)
+				{
+					RemovePlayerFromVehicle(playerid);
+					SendClientMessage(playerid, -1, MSG_START_JOB_DAY);
+					return 0;
+				}
+				if(GetVehicleModel(vehicleid) == 455 || GetVehicleModel(vehicleid) == 548 || GetVehicleModel(vehicleid) == 433) {
+					if(PlayerInfo[playerid][pRank] < 5) return SendClientMessage(playerid, -1, ""COLOR_RED"Работа доступна только после достижения 5 ранга"), RemovePlayerFromVehicle(playerid);
+					if(gonecar[playerid] != INVALID_VEHICLE_ID) {
+					ReturnTimerID[playerid] = KillTimer(ReturnTimerID[playerid]);
+					gonecar[playerid] = INVALID_VEHICLE_ID;	
+					} else {
 					ArmyMission[playerid] = 1;
 					RouteTrash[playerid] = -1;
+					RouteLSPD[playerid] = -1;
 					RouteFarm[playerid] = -1;
 					UnloadFarm[playerid] = -1;
 				 	Route2[playerid] = -1;
@@ -380,31 +516,51 @@ public Vehicle_OnPlayerEnterVehicle(playerid, vehicleid) {
 					SendClientMessage(playerid, -1, ""COLOR_GREEN"Отправляйтесь на загрузку боеприпасов");
 					DisablePlayerRaceCheckpoint(playerid);
 					SetPlayerRaceCheckpoint(playerid, 1, 328.5100,1963.1115,17.6406, 328.5100,1963.1115,17.6406, 5);
+					}
 					return 1;
 				}
-				return 1;
+			} else if(vehicle_owner == VO_FRACTION_NEWS) {
+				if(fractionid != FRACTION_NEWS) {
+				    SendClientMessage(playerid, -1, ""COLOR_RED"Вы не работаете в San News");
+					RemovePlayerFromVehicle(playerid);
+					return 0;
+				}
+				else
+				{
+					if(GetPlayerJobDayStatus(playerid) == false)
+					{
+						RemovePlayerFromVehicle(playerid);
+						SendClientMessage(playerid, -1, MSG_START_JOB_DAY);
+						return 0;
+					}
+					return 1;
+				}
 			} else if(vehicle_owner == VO_FARM) {
 				if(GetVehicleModel(vehicleid) == 532) {
 					if(GetPVarInt(playerid, "tempjob") != 1) {
-						SetVehicleToRespawn(vehicleid);
+						RemovePlayerFromVehicle(playerid);
 						return 0;
 					}
 				    if(PlayerInfo[playerid][pFarmSkill] < 500) {
-				     	SetVehicleToRespawn(vehicleid);
+				     	RemovePlayerFromVehicle(playerid);
 				    	SendClientMessage(playerid, -1, ""COLOR_RED"Доступно с 500 навыка фермера");
 				    	return 0;
 				   	}
 		  			if(HarvestAmount > 0) {
 		  			 	SendClientMessage(playerid, -1, ""COLOR_RED"На поле достаточно урожая");
-		  				SetVehicleToRespawn(vehicleid);
+		  				RemovePlayerFromVehicle(playerid);
 		  				return 0;
 		  			}
-					
+					if(gonecar[playerid] != INVALID_VEHICLE_ID) {
+					ReturnTimerID[playerid] = KillTimer(ReturnTimerID[playerid]);
+					gonecar[playerid] = INVALID_VEHICLE_ID;	
+					} else {
 					SendClientMessage(playerid, -1, ""COLOR_GREEN"Вы начали посев поля");
 		  			RouteFarm[playerid] = 1;
 		  			UnloadFarm[playerid] = -1;
 					RouteLic[playerid] = -1;
 					RouteTrash[playerid] = -1;
+					RouteLSPD[playerid] = -1;
 					RouteLicAir[playerid] = -1;
 					RouteAir[playerid] = -1;
 					RouteAir2[playerid] = -1;
@@ -414,6 +570,7 @@ public Vehicle_OnPlayerEnterVehicle(playerid, vehicleid) {
 				 	ArmyMission[playerid] = -1;
 				 	DisablePlayerRaceCheckpoint(playerid);
 		  			SetPlayerRaceCheckpoint(playerid, 0,-322.7826,-1426.0459,14.4216,-275.9756,-1416.3439,10.9044,10); // combine
+					}
 					return 1;
 				} else {
 					return 0;
@@ -425,7 +582,7 @@ public Vehicle_OnPlayerEnterVehicle(playerid, vehicleid) {
 				    RemovePlayerFromVehicle(playerid);
 				    return 0;
 				}
-				if(fractionid != FRACTION_NONE) {
+				if(fractionid != FRACTION_NONE && GetPlayerJobDayStatus(playerid) == true) {
 	   				SendClientMessage(playerid, -1, ""COLOR_RED"Вы состоите во фракции!");
 					RemovePlayerFromVehicle(playerid);
 					return 0;
@@ -436,6 +593,16 @@ public Vehicle_OnPlayerEnterVehicle(playerid, vehicleid) {
 					return 0;
 				}
 				if(Runway[0] > 0) {
+					if(GetVehicleModel(vehicleid) == 592) {
+						new Float: pos_x,
+						Float: pos_y,
+						Float: pos_z;
+						GetPlayerPos(playerid, pos_x, pos_y, pos_z);
+						TogglePlayerSpectating(playerid, 0);
+						SetPlayerPos(playerid, pos_x, pos_y, pos_z+8);
+						SendClientMessage(playerid, -1, ""COLOR_RED"Подождите. В данный момент другой пилот занимает место посадки");
+						return 0;
+					}
 					SendClientMessage(playerid, -1, ""COLOR_RED"Подождите. В данный момент другой пилот занимает место посадки");
 					RemovePlayerFromVehicle(playerid);
 					return 0;
@@ -459,22 +626,32 @@ public Vehicle_OnPlayerEnterVehicle(playerid, vehicleid) {
     			} else if(GetVehicleModel(vehicleid) == 592) {
     				if(PlayerInfo[playerid][pAirSkill] < 499) { 
     					SendClientMessage(playerid, -1, ""COLOR_GREEN"С вашим опытом пилота, данный самолет недоступен"); 
-    					RemovePlayerFromVehicle(playerid); 
+						new Float: pos_x,
+						Float: pos_y,
+						Float: pos_z;
+						GetPlayerPos(playerid, pos_x, pos_y, pos_z);
+						TogglePlayerSpectating(playerid, 0);
+						SetPlayerPos(playerid, pos_x, pos_y, pos_z+8);
     					return 0;
     				}
     			}
-
+    			if(gonecar[playerid] != INVALID_VEHICLE_ID) {
+					ReturnTimerID[playerid] = KillTimer(ReturnTimerID[playerid]);
+					gonecar[playerid] = INVALID_VEHICLE_ID;	
+				} else {
     			SendClientMessage(playerid, -1, ""COLOR_GREEN"Вы начали работу пилота");
 				SendClientMessage(playerid, -1, ""COLOR_GREEN"Увеличивая скилл пилота вы получите больше EXP!");
 				SendClientMessage(playerid, -1, ""COLOR_GREEN"В конце рейса вы получите зарплату. Покинув самолет вы прекратите работу");
 			 	SetPlayerRaceCheckpoint(playerid, 2, 1507.5469,1463.4788,10.4105, 1477.3033,1497.8701,10.3932, 20);
 				RouteAir[playerid] = 1;
+				RouteLSPD[playerid] = -1;
 			 	Route2[playerid] = -1;
 			 	Route3[playerid] = -1;
 			 	ArmyMission[playerid] = -1;
 			 	Route[playerid] = -1;
 			 	RouteLic[playerid] = -1;
 			 	RouteLicAir[playerid] = -1;
+			 	}
 			 	return 1;
 			} else if(vehicle_owner == VO_AIR_LS) {
 				if(PlayerInfo[playerid][pLicenseAir] == 0) {
@@ -483,7 +660,7 @@ public Vehicle_OnPlayerEnterVehicle(playerid, vehicleid) {
 				    RemovePlayerFromVehicle(playerid);
 				    return 0;
 				}
-				if(fractionid != FRACTION_NONE) {
+				if(fractionid != FRACTION_NONE && GetPlayerJobDayStatus(playerid) == true) {
 	   				SendClientMessage(playerid, -1, ""COLOR_RED"Вы состоите во фракции!");
 					RemovePlayerFromVehicle(playerid);
 					return 0;
@@ -521,9 +698,17 @@ public Vehicle_OnPlayerEnterVehicle(playerid, vehicleid) {
     					return 0;
     				}
     			}
+    			if(gonecar[playerid] != INVALID_VEHICLE_ID) {
+					ReturnTimerID[playerid] = KillTimer(ReturnTimerID[playerid]);
+					gonecar[playerid] = INVALID_VEHICLE_ID;	
+				} else {
+			    SendClientMessage(playerid, -1, ""COLOR_GREEN"Вы начали работу пилота");
+				SendClientMessage(playerid, -1, ""COLOR_GREEN"Увеличивая скилл пилота вы получите больше EXP!");
+				SendClientMessage(playerid, -1, ""COLOR_GREEN"В конце рейса вы получите зарплату. Покинув самолет вы прекратите работу");
 				SetPlayerRaceCheckpoint(playerid, 1, 1914.4653,-2328.6389,13.1067, 1914.4653,-2328.6389,13.1067, 20);
 				RouteAir2[playerid] = 1;
 				RouteTrash[playerid] = -1;
+				RouteLSPD[playerid] = -1;
 				RouteFarm[playerid] = -1;
 				UnloadFarm[playerid] = -1;
 				RouteAir[playerid] = -1;
@@ -533,6 +718,7 @@ public Vehicle_OnPlayerEnterVehicle(playerid, vehicleid) {
 			 	Route[playerid] = -1;
 			 	RouteLic[playerid] = -1;
 			 	RouteLicAir[playerid] = -1;
+			 	}
 			 	return 1;
 			}
 		}
@@ -561,7 +747,6 @@ public Vehicle_OnPlayerExitVehicle(playerid, vehicleid) {
 						return 0;
 					}
 				}
-
 				onfootverify(playerid);
 				return 1;
 			}
@@ -570,21 +755,10 @@ public Vehicle_OnPlayerExitVehicle(playerid, vehicleid) {
 	return 0;
 }
 
-stock IsTaxiCar(vehicleid)
-{
-   	for(new i = 0; i < sizeof(VehicleInfo); i++) {
-        if(VehicleInfo[i][VI_VehicleID] == vehicleid) {
-        	if(VehicleInfo[i][VI_Owner] == VO_TAXI) {
-        		return 1;
-        	}
-        }
-    }
-    return 0;
-}
 
 stock IsWarehouseCar(vehicleid)
 {
-	if(GetVehicleModel(vehicleid) != 433 && GetVehicleModel(vehicleid) != 548) {
+	if(GetVehicleModel(vehicleid) != 433 && GetVehicleModel(vehicleid) != 548  && GetVehicleModel(vehicleid) != 455) {
 		return 0;
 	}
 
@@ -598,7 +772,7 @@ stock IsWarehouseCar(vehicleid)
     return 0;
 }
 
-CMD:reloadcar(playerid, params[]) {
+CMD:reloadcarew4(playerid, params[]) {
 	for(new i = 0; i < sizeof(VehicleInfo); i++) {
 		if(VehicleInfo[i][VI_VehicleID] != INVALID_VEHICLE_ID) {
 			DestroyVehicle(VehicleInfo[i][VI_VehicleID]);

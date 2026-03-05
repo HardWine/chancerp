@@ -12,8 +12,8 @@
  * @param {int} const playerid [ID Игрока]
  * @param {int} const cash     [Сумма]
  */
-forward bool:CheckCash(const playerid, const cash);
-public bool:CheckCash(const playerid, const cash) {
+forward CheckCash(const playerid, const cash);
+public CheckCash(const playerid, const cash) {
 	new 
 		player_score = PlayerInfo[playerid][pScore];
 

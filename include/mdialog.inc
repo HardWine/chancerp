@@ -71,7 +71,7 @@
 #endif
 
 #if !FIX_const
-	native MDialog_ShowPlayerDialog(playerid, dialogid, style, const caption[], const info[], const button1[], const button2[]) = ShowPlayerDialog;
+	native MDialogFix_ShowPlayerDialog(playerid, dialogid, style, const caption[], const info[], const button1[], const button2[]) = ShowPlayerDialog;
 
 	#if defined _ALS_ShowPlayerDialog
 		#undef ShowPlayerDialog
@@ -79,8 +79,8 @@
 		#define _ALS_ShowPlayerDialog
 	#endif
 
-	#define ShowPlayerDialog MDialog_ShowPlayerDialog
-	
+	#define ShowPlayerDialog MDialogFix_ShowPlayerDialog
+
 	#if defined MDIALOG_FIX_CLEAR
 		#undef MDIALOG_FIX_CLEAR
 		#undef FIX_const
@@ -100,6 +100,10 @@
 #define DialogResponse:%0(%1) \
 	forward dre_%0(%1); \
 	public dre_%0(%1)
+
+#define DialogInterrupt:%0(%1) \
+	forward din_%0(%1); \
+	public din_%0(%1)
 
 #define Dialog: #
 
@@ -216,134 +220,134 @@ static
 		6.2265625, // }
 		9.34375, // ~
 		8.0, // 
-		14.1640625, // –Ç
-		9.0703125, // –É
-		4.4453125, // ‚Äö
-		6.6640625, // —ì
-		8.0, // ‚Äû
-		16.0, // ‚Ä¶
-		8.8984375, // ‚Ä†
-		8.8984375, // ‚Ä°
-		8.8984375, // ‚Ç¨
-		16.0, // ‚Ä∞
-		17.5, // –â
-		5.328125, // ‚Äπ
-		17.0, // –ä
-		9.765625, // –å
-		14.0, // –ã
-		11.5, // –è
-		9.7734375, // —í
-		4.4453125, // ‚Äò
-		4.4453125, // ‚Äô
-		8.0, // ‚Äú
-		8.0, // ‚Äù
-		5.6015625, // ‚Ä¢
-		8.8984375, // ‚Äì
-		16.0, // ‚Äî
-		16.0, // ‚Ñ¢
-		15.5, // —ô
-		5.328125, // ‚Ä∫
-		14.5, // —ö
-		8.0078125, // —ú
-		9.7734375, // —õ
-		9.6640625, // —ü
-		4.4453125, //  
-		9.953125, // –é
-		8.8984375, // —û
-		8.8984375, // –à
-		8.8984375, // ¬§
-		7.7890625, // “ê
-		4.4765625, // ¬¶
-		8.8984375, // ¬ß
+		14.1640625, // Ä
+		9.0703125, // Å
+		4.4453125, // Ç
+		6.6640625, // É
+		8.0, // Ñ
+		16.0, // Ö
+		8.8984375, // Ü
+		8.8984375, // á
+		8.8984375, // à
+		16.0, // â
+		17.5, // ä
+		5.328125, // ã
+		17.0, // å
+		9.765625, // ç
+		14.0, // é
+		11.5, // è
+		9.7734375, // ê
+		4.4453125, // ë
+		4.4453125, // í
+		8.0, // ì
+		8.0, // î
+		5.6015625, // ï
+		8.8984375, // ñ
+		16.0, // ó
+		16.0, // ô
+		15.5, // ö
+		5.328125, // õ
+		14.5, // ú
+		8.0078125, // ù
+		9.7734375, // û
+		9.6640625, // ü
+		4.4453125, //
+		9.953125, // °
+		8.8984375, // ¢
+		8.8984375, // £
+		8.8984375, // §
+		7.7890625, // •
+		4.4765625, // ¶
+		8.8984375, // ß
 		-1.0,
-		10.703125, // –Å
-		11.7890625, // ¬©
-		11.3828125, // –Ñ
-		8.8984375, // ¬´
-		9.34375, // ¬¨
-		0.0, // ¬≠
-		11.7890625, // ¬Æ
-		4.4140625, // –á
-		6.3984375, // ¬∞
-		8.78125, // ¬±
-		4.4453125, // –Ü
-		4.4453125, // —ñ
-		7.1484375, // “ë
-		9.21875, // ¬µ
-		8.8984375, // ¬∂
-		5.328125, // ¬∑
-		8.8984375, // —ë
-		17.8359375, // ‚Ññ
-		8.8359375, // —î
-		8.8984375, // ¬ª
-		4.4453125, // —ò
-		10.671875, // –Ö
-		8.8984375, // —ï
-		4.5, // —ó
-		11.5546875, // –ê
-		11.5, // –ë
-		11.5546875, // –í
-		9.0703125, // –ì
-		11.3984375, // –î
-		10.671875, // –ï
-		14.4609375, // –ñ
-		10.0234375, // –ó
-		11.5, // –ò
-		11.5, // –ô
-		9.765625, // –ö
-		11.2265625, // –õ
-		13.328125, // –ú
-		11.5546875, // –ù
-		12.4453125, // –û
-		11.5, // –ü
-		10.671875, // –†
-		11.5546875, // –°
-		9.7734375, // –¢
-		9.953125, // –£
-		13.65625, // –§
-		10.671875, // –•
-		11.6875, // –¶
-		11.2421875, // –ß
-		16.078125, // –®
-		16.3046875, // –©
-		13.9140625, // –™
-		15.6640625, // –´
-		11.5, // –¨
-		11.3828125, // –≠
-		16.5, // –Æ
-		11.5, // –Ø
-		8.8984375, // –∞
-		9.8828125, // –±
-		9.8359375, // –≤
-		6.6640625, // –≥
-		10.15625, // –¥
-		8.8984375, // –µ
-		11.34375, // –∂
-		7.953125, // –∑
-		9.8359375, // –∏
-		9.8359375, // –π
-		8.0078125, // –∫
-		10.1640625, // –ª
-		11.8359375, // –º
-		9.6640625, // –Ω
-		9.7734375, // –æ
-		9.6640625, // –ø
-		9.7734375, // —Ä
-		8.8984375, // —Å
-		7.8359375, // —Ç
-		8.8984375, // —É
-		14.0, // —Ñ
-		8.8984375, // —Ö
-		9.8359375, // —Ü
-		9.2890625, // —á
-		13.3359375, // —à
-		13.5, // —â
-		11.6640625, // —ä
-		13.6640625, // —ã
-		9.8359375, // —å
-		8.8359375, // —ç
-		13.6640625, // —é
-		9.3359375 // —è
+		10.703125, // ®
+		11.7890625, // ©
+		11.3828125, // ™
+		8.8984375, // ´
+		9.34375, // ¨
+		0.0, // ≠
+		11.7890625, // Æ
+		4.4140625, // Ø
+		6.3984375, // ∞
+		8.78125, // ±
+		4.4453125, // ≤
+		4.4453125, // ≥
+		7.1484375, // ¥
+		9.21875, // µ
+		8.8984375, // ∂
+		5.328125, // ∑
+		8.8984375, // ∏
+		17.8359375, // π
+		8.8359375, // ∫
+		8.8984375, // ª
+		4.4453125, // º
+		10.671875, // Ω
+		8.8984375, // æ
+		4.5, // ø
+		11.5546875, // ¿
+		11.5, // ¡
+		11.5546875, // ¬
+		9.0703125, // √
+		11.3984375, // ƒ
+		10.671875, // ≈
+		14.4609375, // ∆
+		10.0234375, // «
+		11.5, // »
+		11.5, // …
+		9.765625, //  
+		11.2265625, // À
+		13.328125, // Ã
+		11.5546875, // Õ
+		12.4453125, // Œ
+		11.5, // œ
+		10.671875, // –
+		11.5546875, // —
+		9.7734375, // “
+		9.953125, // ”
+		13.65625, // ‘
+		10.671875, // ’
+		11.6875, // ÷
+		11.2421875, // ◊
+		16.078125, // ÿ
+		16.3046875, // Ÿ
+		13.9140625, // ⁄
+		15.6640625, // €
+		11.5, // ‹
+		11.3828125, // ›
+		16.5, // ﬁ
+		11.5, // ﬂ
+		8.8984375, // ‡
+		9.8828125, // ·
+		9.8359375, // ‚
+		6.6640625, // „
+		10.15625, // ‰
+		8.8984375, // Â
+		11.34375, // Ê
+		7.953125, // Á
+		9.8359375, // Ë
+		9.8359375, // È
+		8.0078125, // Í
+		10.1640625, // Î
+		11.8359375, // Ï
+		9.6640625, // Ì
+		9.7734375, // Ó
+		9.6640625, // Ô
+		9.7734375, // 
+		8.8984375, // Ò
+		7.8359375, // Ú
+		8.8984375, // Û
+		14.0, // Ù
+		8.8984375, // ı
+		9.8359375, // ˆ
+		9.2890625, // ˜
+		13.3359375, // ¯
+		13.5, // ˘
+		11.6640625, // ˙
+		13.6640625, // ˚
+		9.8359375, // ¸
+		8.8359375, // ˝
+		13.6640625, // ˛
+		9.3359375 // ˇ
 	};
 
 static
@@ -357,19 +361,19 @@ static
 
 static
 	bool:gIsDialogOpen[MAX_PLAYERS char],
-	gDialogFunction[MAX_PLAYERS][MAX_FUNCTION_NAME char];
+	gDialogFunction[MAX_PLAYERS][MAX_FUNCTION_NAME];
 
 /*
 	OnGameModeInit
 */
 
+#if !defined MDIALOG_DISABLE_TAGS
+
 public OnGameModeInit()
 {
-#if !defined MDIALOG_DISABLE_TAGS
 	for (new tag = 0; tag < sizeof(gTag); tag++) {
 		gTagLength[E_MDIALOG_TAG:tag] = strlen(gTag[E_MDIALOG_TAG:tag]);
 	}
-#endif
 
 	#if defined MDialog_OnGameModeInit
 		return MDialog_OnGameModeInit();
@@ -388,14 +392,43 @@ public OnGameModeInit()
 	forward MDialog_OnGameModeInit();
 #endif
 
+#endif
+
+/*
+	ShowPlayerDialog
+*/
+
+stock MDialog_ShowPlayerDialog(playerid, dialogid, style, const caption[], const info[], const button1[], const button2[])
+{
+	if (dialogid != -1 && dialogid != MDIALOG_DIALOG_ID) {
+		if (Dialog_IsOpen(playerid, gDialogFunction[playerid])) {
+			Dialog_Close(playerid, gDialogFunction[playerid][4], false);
+		}
+	}
+
+	return ShowPlayerDialog(playerid, dialogid, style, caption, info, button1, button2);
+}
+#if defined _ALS_ShowPlayerDialog
+	#undef ShowPlayerDialog
+#else
+	#define _ALS_ShowPlayerDialog
+#endif
+
+#define ShowPlayerDialog MDialog_ShowPlayerDialog
+
 /*
 	Dialog_Open
 */
 
 static stock _Dialog_Open(playerid, const function[], style, const caption[], const info[], const button1[], const button2[])
 {
+	if (Dialog_IsOpen(playerid, gDialogFunction[playerid])) {
+		Dialog_Interrupt(playerid, gDialogFunction[playerid][4]);
+	}
+
 	gIsDialogOpen{playerid} = true;
-	gDialogFunction[playerid] = !"dre_";
+
+	gDialogFunction[playerid] = "dre_";
 	strcat(gDialogFunction[playerid], function, sizeof(gDialogFunction[]));
 
 	switch (style) {
@@ -451,24 +484,50 @@ stock Dialog_Open(playerid, const function[], style, const caption[], const info
 }
 
 #endif
+
 /*
 	Dialog_Close
 */
 
-stock Dialog_Close(playerid)
+stock Dialog_Close(playerid, const function[] = "", showDialog = true)
 {
 	gIsDialogOpen{playerid} = false;
 	gDialogFunction[playerid][0] = '\0';
-	return ShowPlayerDialog(playerid, -1, DIALOG_STYLE_MSGBOX, " ", " ", " ", "");
+
+	Dialog_Interrupt(playerid, function);
+
+	if (showDialog) {
+		return ShowPlayerDialog(playerid, -1, DIALOG_STYLE_MSGBOX, " ", " ", " ", "");
+	}
+
+	return 1;
+}
+
+stock Dialog_Interrupt(playerid, const function[])
+{
+	if (!isnull(function)) {
+		new call_func[MAX_FUNCTION_NAME char] = !"din_";
+		strcat(call_func, function);
+		return CallLocalFunction(call_func, "d", playerid);
+	}
+	return 0;
 }
 
 /*
 	Dialog_IsOpen
 */
 
-stock Dialog_IsOpen(playerid)
+stock Dialog_IsOpen(playerid, const function[] = "")
 {
-	return _:gIsDialogOpen{playerid};
+	if (isnull(function)) {
+		return _:gIsDialogOpen{playerid};
+	}
+
+	if (!isnull(gDialogFunction[playerid]) && gIsDialogOpen{playerid} && strcmp(gDialogFunction[playerid][4], function) == 0) {
+		return 1;
+	}
+
+	return 0;
 }
 
 /*
@@ -480,6 +539,20 @@ stock Dialog_Show(playerid, const function[])
 	new call_func[MAX_FUNCTION_NAME char] = !"dcr_";
 	strcat(call_func, function);
 	return CallLocalFunction(call_func, "d", playerid);
+}
+
+/*
+	Dialog_GetCurrent
+*/
+
+stock Dialog_GetCurrent(playerid, function[], const size = sizeof(function))
+{
+	if (gDialogFunction[playerid][0] == '\0') {
+		function[0] = '\0';
+		return 0;
+	}
+
+	return _MDialog_strcpy(function, gDialogFunction[playerid][4], size);
 }
 
 /*
@@ -567,8 +640,11 @@ stock Dialog_MessageEx(playerid, const response[], const caption[], const info[]
 
 public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 {
+	static temp[128];
+	_MDialog_strcpy(temp, inputtext);
+
 	if (dialogid == MDIALOG_DIALOG_ID) {
-		if (inputtext[0] == '\0') {
+		if (temp[0] == '\0') {
 			if (Dialog_IsOpen(playerid)) {
 				gIsDialogOpen{playerid} = false;
 				return CallLocalFunction(gDialogFunction[playerid], "ddds", playerid, response, listitem, "\1");
@@ -576,21 +652,21 @@ public OnDialogResponse(playerid, dialogid, response, listitem, inputtext[])
 			return 0;
 		}
 
-		for (new i = strlen(inputtext) - 1; i != -1; i--) {
-			if (inputtext[i] == '%') {
-				inputtext[i] = '#';
+		for (new i = strlen(temp) - 1; i != -1; i--) {
+			if (temp[i] == '%') {
+				temp[i] = '#';
 			}
 		}
 
 		if (Dialog_IsOpen(playerid)) {
 			gIsDialogOpen{playerid} = false;
-			return CallLocalFunction(gDialogFunction[playerid], "ddds", playerid, response, listitem, inputtext);
+			return CallLocalFunction(gDialogFunction[playerid], "ddds", playerid, response, listitem, temp);
 		}
 		return 0;
 	}
 
 	#if defined MDialog_OnDialogResponse
-		return MDialog_OnDialogResponse(playerid, dialogid, response, listitem, inputtext);
+		return MDialog_OnDialogResponse(playerid, dialogid, response, listitem, temp);
 	#else
 		return 0;
 	#endif

@@ -22,7 +22,7 @@ forward bool: House.UpRentDay(const arrayID);
  */	
 forward bool: House.SwitchClossed(const arrayID);
 /**
- * [House.SellHouse изменяет статус дверей]
+ * [House.SellHouse продает дом]
  * @param {int} const houseID [ID ячейки дома]
  * @param {int} const percent [Процент который необходимо вернуть бывшему владельцу]
  */	
@@ -34,9 +34,8 @@ forward bool: House.SellHouse(const arrayID, const percent);
  */	
 forward bool: House.SetRentDay(const arrayID, const day);
 /**
- * [House.SetRentDay устанавливает кол-во оплаченных дней дому]
+ * [House.DownRentDay понижает кол-во оплаченных дней у дома на 1]
  * @param {int} const houseID [ID ячейки дома]
- * @param {int} const percent [Кол-во дней]
  */	
 forward bool: House.DownRentDay(const arrayID);
 /**

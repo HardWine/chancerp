@@ -117,7 +117,12 @@ stock Porter_OP_PickUpDynamicPickup(playerid, pickupid) {
             porter_state[playerid] = 0;
             value_boxes[playerid] = 0;
 
-            Player.AddEXP(PlayerInfo[playerid][pID], total_porter_payday[playerid], E_JOB_PORTER, playerid);
+            if(IsPlayerPremiumAccount(playerid) == true || X2_STATUS == 1) {
+            	AddPlayerEXP(playerid, (total_porter_payday[playerid] * 2), "Работа грузчиком");
+            } else {
+            	AddPlayerEXP(playerid, (total_porter_payday[playerid]), "Работа грузчиком");
+            }
+
 			if(total_porter_payday[playerid] > 0 ) {
 				format(pointer_string, sizeof(pointer_string), ""COLOR_GREEN"Работа завершена. Вы заработали: {FFFFFF}%d EXP", total_porter_payday[playerid]);
 				SendClientMessage(playerid, -1, pointer_string);
@@ -134,7 +139,7 @@ stock Porter_OP_PickUpDynamicPickup(playerid, pickupid) {
  	    }
 		new 
 		Fraction:fractionid = GetPlayerFraction(playerid);
- 	    if(fractionid != FRACTION_NONE) return SendClientMessage(playerid, -1, ""COLOR_RED"Вы состоите во фракции");
+ 	    if(fractionid != FRACTION_NONE && GetPlayerJobDayStatus(playerid) == true) return SendClientMessage(playerid, -1, ""COLOR_RED"Вы состоите во фракции");
 
  	    porter_state[playerid] = 0;
 		value_boxes[playerid] = 0;
@@ -166,29 +171,32 @@ stock Porter_OP_PickUpDynamicPickup(playerid, pickupid) {
  	    Streamer_Update(playerid, STREAMER_TYPE_CP);
 		return 1;
 	}
-	return 0;
+	return 1;
 }
 
 stock Porter_OnPlayerEnterDynamicCP(playerid, checkpointid) {
 	if(IsPlayerInAnyVehicle(playerid)) {
-		return 1;
+		return 0;
 	}
 	
 	if(checkpointid == point_porter)
 	{
-		if(GetPVarInt(playerid,"DropBox") > gettime()){ GameTextForPlayer(playerid, "~r~WAIT...", 7250, 5);	return false; }
+		if(GetPVarInt(playerid,"DropBox") > gettime()) { 
+			GameTextForPlayer(playerid, "~r~WAIT...", 7250, 5);	
+			return 1; 
+		}
 
 
 		TogglePlayerDynamicCP(playerid, point_porter, false);
 		deliver_goods(playerid);
 		Streamer_Update(playerid, STREAMER_TYPE_CP);
 		if(GetPVarInt(playerid, "Worker") == 0) {
-			SetPVarInt(playerid,"Worker", 1);
-			SendClientMessage(playerid, -1, ""COLOR_ORANGE"Вы взяли груз, доставьте его в указанное место");
+		SetPVarInt(playerid,"Worker", 1);
+		SendClientMessage(playerid, -1, ""COLOR_ORANGE"Вы взяли груз, доставьте его в указанное место");
 		}
 
-		ClearAnimations(playerid);
-    	ApplyAnimation(playerid, !"CARRY", !"crry_prtial", 4.0, 1, 0, 0, 1, 1, 1);
+		//ClearAnimations(playerid);
+    	//ApplyAnimation(playerid, !"CARRY", !"crry_prtial", 4.0, 1, 0, 0, 1, 1, 1);
     	SetPlayerSpecialAction(playerid, SPECIAL_ACTION_CARRY);
     	weight[playerid] = RandomEx(WEIGHT_MIN, WEIGHT_MAX);
 
@@ -199,6 +207,7 @@ stock Porter_OnPlayerEnterDynamicCP(playerid, checkpointid) {
 		SetPVarInt(playerid,"TakenBox",gettime() + 3);
 
 		SetPlayerAttachedObject(playerid, 0, 1271, 17, -0.030999, 0.492000, 0.000000, 0.000000, 0.000000, 0.000000, 0.503000, 0.569000, 1.000000);
+		
 		switch(random(5)){
 			case 0: {		
 			switch(random(5)){		
@@ -214,8 +223,8 @@ stock Porter_OnPlayerEnterDynamicCP(playerid, checkpointid) {
 			case 2: return 1;
 			case 3: return 1;
 			case 4: return 1;
-		}	
-		return 1;					
+		}
+		return 1;						
     }
     if(checkpointid >= unload_porter[0] && checkpointid <= unload_porter[3]) {
 		for(new i = 0; i < sizeof(unload_porter); i++) {
@@ -225,13 +234,18 @@ stock Porter_OnPlayerEnterDynamicCP(playerid, checkpointid) {
 		Streamer_Update(playerid, STREAMER_TYPE_CP);
 		ClearPlayerAnim(playerid);
 		SetPlayerSpecialAction(playerid, SPECIAL_ACTION_NONE);
-		if(GetPVarInt(playerid,"TakenBox") > gettime()){ return Kick(playerid); }
+		if(GetPVarInt(playerid,"TakenBox") > gettime()) {
+			Kick(playerid); 
+			return 1;
+		}
 
 		if(GetPVarInt(playerid, "Worker") == 1) {
 			SetPVarInt(playerid,"Worker", 2);
 			SendClientMessage(playerid, -1, ""COLOR_GREEN"Вы доставили груз. Для получения зарплаты - переоденьтесь");
-		}				
+		}			
 
+		AddPlayerAchievement(playerid, E_HEAVY_LOAD);	
+		UpdatePlayerProgressQuest(playerid, E_GARBAGE_LOADER);
 		value_boxes[playerid]++;
 
 		if (value_boxes[playerid] % TO_GET_BOX_BOUNTY == 0) {
@@ -242,6 +256,7 @@ stock Porter_OnPlayerEnterDynamicCP(playerid, checkpointid) {
 		}
 
 		new sum = weight[playerid]*PORT_COUNTER;
+
 
 		total_porter_payday[playerid] += sum;
 

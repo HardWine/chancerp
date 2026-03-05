@@ -3,12 +3,24 @@
 #endif
 #define _INC_indirection
 
-#tryinclude "..\amx\addressof"
-#tryinclude <amx_assembly\addressof>
-#tryinclude "..\amx_assembly\addressof"
-#tryinclude "..\..\amx_assembly\addressof"
-#tryinclude "addressof"
-#tryinclude <addressof>
+#if !defined ADDRESSOF_INC
+	#tryinclude "..\amx\addressof"
+#endif
+#if !defined ADDRESSOF_INC
+	#tryinclude <amx_assembly\addressof>
+#endif
+#if !defined ADDRESSOF_INC
+	#tryinclude "..\amx_assembly\addressof"
+#endif
+#if !defined ADDRESSOF_INC
+	#tryinclude "..\..\amx_assembly\addressof"
+#endif
+#if !defined ADDRESSOF_INC
+	#tryinclude "addressof"
+#endif
+#if !defined ADDRESSOF_INC
+	#tryinclude <addressof>
+#endif
 #if !defined ADDRESSOF_INC
 	#define AMX_INCLUDING_FAILED
 #endif
@@ -16,22 +28,46 @@
 	#define AMX_INCLUDING_FAILED
 #endif
 
-#tryinclude "..\amx\addressof_jit"
-#tryinclude <amx_assembly\addressof_jit>
-#tryinclude "..\amx_assembly\addressof_jit"
-#tryinclude "..\..\amx_assembly\addressof_jit"
-#tryinclude "addressof_jit"
-#tryinclude <addressof_jit>
+#if !defined ADDRESSOF_JIT_INC
+	#tryinclude "..\amx\addressof_jit"
+#endif
+#if !defined ADDRESSOF_JIT_INC
+	#tryinclude <amx_assembly\addressof_jit>
+#endif
+#if !defined ADDRESSOF_JIT_INC
+	#tryinclude "..\amx_assembly\addressof_jit"
+#endif
+#if !defined ADDRESSOF_JIT_INC
+	#tryinclude "..\..\amx_assembly\addressof_jit"
+#endif
+#if !defined ADDRESSOF_JIT_INC
+	#tryinclude "addressof_jit"
+#endif
+#if !defined ADDRESSOF_JIT_INC
+	#tryinclude <addressof_jit>
+#endif
 #if !defined ADDRESSOF_JIT_INC
 	#define AMX_INCLUDING_FAILED
 #endif
 
-#tryinclude "..\amx\amx_header"
-#tryinclude <amx_assembly\amx_header>
-#tryinclude "..\amx_assembly\amx_header"
-#tryinclude "..\..\amx_assembly\amx_header"
-#tryinclude "amx_header"
-#tryinclude <amx_header>
+#if !defined AMX_HEADER_INC
+	#tryinclude "..\amx\amx_header"
+#endif
+#if !defined AMX_HEADER_INC
+	#tryinclude <amx_assembly\amx_header>
+#endif
+#if !defined AMX_HEADER_INC
+	#tryinclude "..\amx_assembly\amx_header"
+#endif
+#if !defined AMX_HEADER_INC
+	#tryinclude "..\..\amx_assembly\amx_header"
+#endif
+#if !defined AMX_HEADER_INC
+	#tryinclude "amx_header"
+#endif
+#if !defined AMX_HEADER_INC
+	#tryinclude <amx_header>
+#endif
 #if !defined AMX_HEADER_INC
 	#define AMX_INCLUDING_FAILED
 #endif
@@ -43,11 +79,10 @@
 #endif
 
 #if defined CUSTOM_TAG_TYPES
-	#define File,Float, Float,File,Text3D,CUSTOM_TAG_TYPES
+	#define GLOBAL_TAG_TYPES {_,Language,Bit,Text,Menu,Style,XML,Bintree,Group,Timer,File,Float,Text3D,CUSTOM_TAG_TYPES}
 #else
-	#define File,Float, Float,File,Text3D
+	#define GLOBAL_TAG_TYPES {_,Language,Bit,Text,Menu,Style,XML,Bintree,Group,Timer,File,Float,Text3D}
 #endif
-#define GLOBAL_TAG_TYPES {_,Language,Bit,Text,Menu,Style,XML,Bintree,Group,Timer,File,Float,}
 
 enum E_INDIRECTION
 {
@@ -867,13 +902,21 @@ public Indirect_FromCallback(Func:cb<>, bool:release)
  * </remarks>
  *//*------------------------------------------------------------------------**/
 
+Indirect_Init()
+{
+	if (!gsCodSize)
+	{
+		AddressofResolve();
+		new
+			amxhdr[AMX_HDR];
+		GetAmxHeader(amxhdr);
+		gsCodSize = amxhdr[AMX_HDR_DAT] - amxhdr[AMX_HDR_COD];
+	}
+}
+ 
 public OnJITCompile()
 {
-	AddressofResolve();
-	new
-		amxhdr[AMX_HDR];
-	GetAmxHeader(amxhdr);
-	gsCodSize = amxhdr[AMX_HDR_DAT] - amxhdr[AMX_HDR_COD];
+	Indirect_Init();
 	#if defined Indirection_OnJITCompile
 		return Indirection_OnJITCompile();
 	#else
@@ -883,11 +926,7 @@ public OnJITCompile()
 
 public OnFilterScriptInit()
 {
-	AddressofResolve();
-	new
-		amxhdr[AMX_HDR];
-	GetAmxHeader(amxhdr);
-	gsCodSize = amxhdr[AMX_HDR_DAT] - amxhdr[AMX_HDR_COD];
+	Indirect_Init();
 	#if defined Indirection_OnFilterScriptInit
 		Indirection_OnFilterScriptInit();
 	#endif
@@ -896,11 +935,7 @@ public OnFilterScriptInit()
 
 public OnGameModeInit()
 {
-	AddressofResolve();
-	new
-		amxhdr[AMX_HDR];
-	GetAmxHeader(amxhdr);
-	gsCodSize = amxhdr[AMX_HDR_DAT] - amxhdr[AMX_HDR_COD];
+	Indirect_Init();
 	#if defined Indirection_OnGameModeInit
 		Indirection_OnGameModeInit();
 	#endif

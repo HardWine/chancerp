@@ -1,0 +1,2 @@
+[16:48:22] [DEBUG] Fraction.ResetLeader(0) (D:\chancerp\chancerp\source/fraction/fraction_api.inc:67 -> D:\chancerp\chancerp\gamemodes\Android.pwn:695)
+[16:48:22] [WARNING] Попытка обращения к неисцилизированному массиву. Fraction.ResetLeader(0) (D:\chancerp\chancerp\source/fraction/fraction_api.inc:70 -> D:\chancerp\chancerp\gamemodes\Android.pwn:695)

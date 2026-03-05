@@ -88,6 +88,7 @@ public AM_OnPlayerDisconnect(playerid) {
 }
 
 public OnPlayerEnterArmyMissuon(playerid) {
+	if(PlayerInfo[playerid][pRank] < 5) return SendClientMessage(playerid, -1, ""COLOR_RED"Работа доступна только после достижения 5 ранга");
 	SendClientMessage(playerid, -1, ""COLOR_GREEN"Вы начали задание по доставке боеприпасов");
 	SendClientMessage(playerid, -1, ""COLOR_GREEN"Покинув транспорт, задание будет провалено");
 	SendClientMessage(playerid, -1, ""COLOR_GREEN"Отправляйтесь на загрузку боеприпасов");
@@ -113,13 +114,13 @@ public AM_OP_EnterDynamicRaceCP(playerid, checkpointid) {
 		return 1;
 	} else if(checkpointid == army_missuon_car_checkpoint) {
 		TogglePlayerDynamicRaceCP(playerid, checkpointid, false);
-		SendClientMessage(playerid, -1, "Происходит загрузка боеприпасов в кузов автомобиля.");
+		SendClientMessage(playerid, -1, "Происходит загрузка боеприпасов в кузов автомобиля");
 		SetPVarInt(playerid, "MinusTime", 10);
 		player_army_missuon_timer[playerid] = SetTimerEx("OnPlayerArmyMissuonLoad", 10_000, false, "i", playerid);
 		return 1;
 	} else if(checkpointid == army_missuon_fly_checkpoint) {
 		TogglePlayerDynamicRaceCP(playerid, checkpointid, false);
-		SendClientMessage(playerid, -1, "Происходит загрузка боеприпасов на борт вертолета.");
+		SendClientMessage(playerid, -1, "Происходит загрузка боеприпасов на борт вертолета");
 		SetPVarInt(playerid, "MinusTime", 10);
 		player_army_missuon_timer[playerid] = SetTimerEx("OnPlayerArmyMissuonLoad", 10_000, false, "i", playerid);
 		return 1;
@@ -175,7 +176,7 @@ stock HideAllAM_PointForPlayer(playerid) {
 	}
 	return 1;
 }
-
+/*
 CMD:testcp(playerid, params[]) {
 	TogglePlayerDynamicRaceCP(playerid, army_missuon_car_checkpoint, false);
-}
+}*/

@@ -8,7 +8,7 @@
 #define MAX_ACCOUNTS_COMAMND_LIP 				(15) // Максимальное кол-во аккаунтов выводимое через /lip
 
 CMD:lip(playerid, params[]) {
-	if(GetPlayerAdminLevel(playerid) < 3) {
+	if(GetPlayerAdminLevel(playerid) < 4) {
 		return 0;
 	} 
 	

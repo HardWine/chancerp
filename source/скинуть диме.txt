@@ -1,0 +1,92 @@
+1. Заменить команду /a на: (добавлен вывод ID администратора при отправке сообщения)
+
+    CMD:a(playerid, params[])
+    {
+        if(GetPlayerAdminLevel(playerid) == 0) return true;
+        if(!params[0])return SendClientMessage(playerid, -1, !"Используйте: /a [текст]");
+        new chat[144];
+        format(chat, sizeof(chat), ""COLOR_RED"[A]"COLOR_WHITE" %s(%i): %s", PlayerInfo[playerid][pName], playerid, params[0]);
+        SendAdminMessage(-1, chat);
+        return 1;
+    }
+
+2. Добавить в конец мода:
+    stock bool:FindFamily(params[], family[]) {
+        new
+            start_pos = strfind(params, "@"),
+            end_pos = start_pos;
+
+        new strID[4];
+
+        strID[0] = EOS;
+
+        if(start_pos != -1) {
+            start_pos = start_pos + 1;
+            for(new i = start_pos; i <= start_pos + 4; i++) {
+                if(params[i] >= '0' && params[i] <= '9') {
+                    strcat(strID, params[i]);
+                    end_pos = i;
+                } else {
+                    break;
+                }
+            }
+        }
+
+        strdel(params, start_pos - 1, end_pos + 1);
+
+        new
+            targetID = strval(strID);
+
+        if(IsPlayerConnected(targetID)) {
+            new
+                name[MAX_PLAYER_NAME];
+
+            sscanf(PlayerInfo[targetID][pName], "p<_>s[24]s[24]", name, family);
+
+            return true;
+        }
+        return false;
+    }
+
+
+
+
+Пример использования:
+
+CMD:mute(playerid, params[])
+{
+    if(GetPlayerAdminLevel(playerid) < 2) return true;
+    if(sscanf(params,"dis[128]", params[0],params[1],params[2])) return SendClientMessage(playerid, -1, "Используйте: /mute [id игрока] [минуты] [причина]");
+    if(params[0] == INVALID_PLAYER_ID) return 1;
+    if(params[1] > 200) return SendClientMessage(playerid, -1, ""COLOR_ORANGE"Максимальный бан чата - 30 минут");
+    //if(GetPlayerAdminLevel(params[0]) > 0) return true;
+    new
+        family[MAX_PLAYER_NAME];
+
+    /**
+     * В FindFamily передаем:
+     * первым параметром - причину наказания
+     * вторым параметром - переменную (типа string) в которую запишется фамилия
+     *
+     * Функция вернет:
+     * true - если игрок с указанным после "@" ID на сервере
+     * false - если игрока нет на сервере
+     */
+
+    new ret_value = FindFamily(params[2], family);
+
+    if(ret_value == true) {
+        format(small_string, sizeof(small_string), ""COLOR_RED"Администратор %s заблокировал чат игроку %s на %d минут. Причина: %s "COLOR_YELLOW"by  %s", PlayerInfo[playerid][pName], PlayerInfo[params[0]][pName], params[1], params[2], family);
+        SendJudgeMessageToAll(small_string, params[0]);
+    } else {
+        format(small_string, sizeof(small_string), ""COLOR_RED"Администратор %s заблокировал чат игроку %s на %d минут. Причина: %s", PlayerInfo[playerid][pName], PlayerInfo[params[0]][pName], params[1], params[2]);
+        SendJudgeMessageToAll(small_string, params[0]);
+    }
+
+    PlayerInfo[params[0]][pMuted] = 1;
+    PlayerInfo[params[0]][pMuteTime] = params[1] * 60;
+    SetPlayerInt(params[0], "Muted", PlayerInfo[params[0]][pMuted]);
+    SetPlayerInt(params[0], "MuteTime", PlayerInfo[params[0]][pMuteTime]);
+    Admin.UpCountMute(GetPlayerAccountID(playerid));
+    return true;
+}

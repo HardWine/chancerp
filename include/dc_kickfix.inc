@@ -77,6 +77,7 @@ native ImmediateKick(playerid) = Kick;
 // Kick hook.
 stock dc_kickfix__Kick(playerid)
 {
+	SetPVarInt(playerid, "kicked", 1);
 	if(0 == IsPlayerConnected(playerid))
 		return 0;
 	SetTimerEx(

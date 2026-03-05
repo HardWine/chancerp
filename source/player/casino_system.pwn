@@ -113,12 +113,8 @@ public Casino_OnGameModeInit() {
 		// Настройки игроков
 		{
 			// Создание зон для игроков
-			CasinoInfo[i][CI_Area1] = CreateDynamicCircle(CasinoInfo[i][CI_X1], CasinoInfo[i][CI_Y1], CASION_CROUPIER_AREA_SIZE, 
-				-1, -1
-			);
-			CasinoInfo[i][CI_Area2] = CreateDynamicCircle(CasinoInfo[i][CI_X2], CasinoInfo[i][CI_Y2], CASION_CROUPIER_AREA_SIZE, 
-				-1, -1
-			);
+			CasinoInfo[i][CI_Area1] = CreateDynamicCylinder(CasinoInfo[i][CI_X1], CasinoInfo[i][CI_Y1], CasinoInfo[i][CI_Z1]-0.1, CasinoInfo[i][CI_Z1]+0.2, CASION_CROUPIER_AREA_SIZE);
+			CasinoInfo[i][CI_Area2] = CreateDynamicCylinder(CasinoInfo[i][CI_X2], CasinoInfo[i][CI_Y2], CasinoInfo[i][CI_Z2]-0.1, CasinoInfo[i][CI_Z2]+0.2, CASION_CROUPIER_AREA_SIZE);
 		}
 
 		{
@@ -148,11 +144,11 @@ public Casino_OnGameModeInit() {
 		SetCasinoPlayer(CasinoInfo[i][CI_Table_ID], 2, INVALID_PLAYER_ID);
 
 		// Настройки крупье
-		CasinoInfo[i][CI_Croupier_Pickup] = CreateDynamicPickup(1275, 23,
+		CasinoInfo[i][CI_Croupier_Pickup] = CreateDynamicPickup(1275, 2,
 			CasinoInfo[i][CI_Croupier_X], CasinoInfo[i][CI_Croupier_Y], CasinoInfo[i][CI_Croupier_Z], 
 			-1, -1
 		);
-		CasinoInfo[i][CI_Croupier_Area] = CreateDynamicCircle(CasinoInfo[i][CI_Croupier_X], CasinoInfo[i][CI_Croupier_Y], 2.50, 
+		CasinoInfo[i][CI_Croupier_Area] = CreateDynamicCircle(CasinoInfo[i][CI_Croupier_X], CasinoInfo[i][CI_Croupier_Y], CASION_CROUPIER_AREA_SIZE, 
 			-1, -1
 		);
 		CasinoInfo[i][CI_Croupier_Label] = CreateDynamic3DTextLabel(" ", 0xFFFFFFFF, 
@@ -169,7 +165,7 @@ public Casino_OnPlayerDisconnect(playerid, reason) {
 	for(new i = 0; i < sizeof(CasinoInfo); i++) {
 		if(CasinoInfo[i][CI_Player1] == playerid) {
 			SetCasinoPlayer(CasinoInfo[i][CI_Table_ID], 1, INVALID_PLAYER_ID);
-		} else if(CasinoInfo[i][CI_Player1] == playerid) {
+		} else if(CasinoInfo[i][CI_Player2] == playerid) {
 			SetCasinoPlayer(CasinoInfo[i][CI_Table_ID], 2, INVALID_PLAYER_ID);
 		} else if(CasinoInfo[i][CI_CroupierID] == playerid) {
 			SetCasinoCroupier(CasinoInfo[i][CI_Table_ID], INVALID_PLAYER_ID);
@@ -285,19 +281,15 @@ public Casino_OnPlayerEnterDynArea(playerid, STREAMER_TAG_AREA areaid) {
 			for(new i = 0; i < sizeof(CasinoInfo); i++) {
 				if(CasinoInfo[i][CI_Area1] == areaid) {
 					if(CasinoInfo[i][CI_Player1] != INVALID_PLAYER_ID) {
-						SendClientMessage(playerid, -1, ""COLOR_ORANGE"Этот столик уже занят.");
-						return 1;
+						return SendClientMessage(playerid, -1, ""COLOR_ORANGE"Этот столик уже занят.");
 					} else {
-						CallLocalFunction("CheckGame", "iii", playerid, i, 1);
-						return 1;
+						return CallLocalFunction("CheckGame", "iii", playerid, i, 1);
 					}
 				} else if(CasinoInfo[i][CI_Area2] == areaid) {
 					if(CasinoInfo[i][CI_Player2] != INVALID_PLAYER_ID) {
-						SendClientMessage(playerid, -1, ""COLOR_ORANGE"Этот столик уже занят.");
-						return 1;
+						return SendClientMessage(playerid, -1, ""COLOR_ORANGE"Этот столик уже занят.");
 					} else {
-						CallLocalFunction("CheckGame", "iii", playerid, i, 2);
-						return 1;
+						return CallLocalFunction("CheckGame", "iii", playerid, i, 2);
 					}
 				}
 			}
@@ -307,19 +299,20 @@ public Casino_OnPlayerEnterDynArea(playerid, STREAMER_TAG_AREA areaid) {
 				if(CasinoInfo[i][CI_Croupier_Area] == areaid) {
 					if(CasinoInfo[i][CI_CroupierID] == INVALID_PLAYER_ID) {
 						SendClientMessage(playerid, -1, ""COLOR_ORANGE"Вы устроились крупье. Займите стол и принимайте ставки");
-						SendClientMessage(playerid, -1, ""COLOR_ORANGE"Если вы не будете работать, казино вас уволит");
-				        
+						SendClientMessage(playerid, -1, ""COLOR_ORANGE"Чтобы поменять ставку на своем столе, введите: {FFFFFF}/bet");
+				        SendClientMessage(playerid, -1, ""COLOR_ORANGE"Если вы не будете работать, казино вас уволит"); 
+
 				        if(PlayerInfo[playerid][pSex] != 0) {
 				        	SetPlayerSkin(playerid, 172);
 				        } else {
 				        	SetPlayerSkin(playerid, 171);
 				        }
 
-						SetCasinoCroupier(CasinoInfo[i][CI_Table_ID], playerid);
-						return 1;
+
+
+						return SetCasinoCroupier(CasinoInfo[i][CI_Table_ID], playerid);
 					} else {
-						SendClientMessage(playerid, -1, ""COLOR_ORANGE"У этого столика уже есть крупье.");
-						return 1;
+						return SendClientMessage(playerid, -1, ""COLOR_ORANGE"У этого столика уже есть крупье.");
 					}
 				}
 			}
@@ -343,22 +336,19 @@ public Casino_OnPlayerLeaveDynArea(playerid, STREAMER_TAG_AREA areaid) {
 						SetCasinoPlayer(CasinoInfo[i][CI_Table_ID], 1, INVALID_PLAYER_ID);
 
 						if(CasinoInfo[i][CI_Player2] == INVALID_PLAYER_ID) {
-							Player.AddEXP(PlayerInfo[playerid][pID], CasinoInfo[i][CI_Table_Sum], E_LEAVE_RETURN_CASINO_CASH, playerid);
+							AddPlayerEXP(playerid, CasinoInfo[i][CI_Table_Sum], "Возврат денег в казино (покинул пикап)");
 						}
 					}
-					return 1;
 				} else if(CasinoInfo[i][CI_Area2] == areaid) {
 					if(CasinoInfo[i][CI_Player2] == playerid) {
 						SetCasinoPlayer(CasinoInfo[i][CI_Table_ID], 2, INVALID_PLAYER_ID);
 
 						if(CasinoInfo[i][CI_Player1] == INVALID_PLAYER_ID) {
-							Player.AddEXP(PlayerInfo[playerid][pID], CasinoInfo[i][CI_Table_Sum], E_LEAVE_RETURN_CASINO_CASH, playerid);
+							AddPlayerEXP(playerid, CasinoInfo[i][CI_Table_Sum], "Возврат денег в казино (покинул пикап)");
 						}
 					}
-					return 1;
 				}
 			}
-			return 1;
 		}
 		case STREAMER_TYPE_CASINO_CROUPIER: {
 			for(new i = 0; i < sizeof(CasinoInfo); i++) {
@@ -371,16 +361,11 @@ public Casino_OnPlayerLeaveDynArea(playerid, STREAMER_TAG_AREA areaid) {
 					}
 				}
 			}
-			return 1;
 		}
 	}
-	return 0;
 }
 forward CheckGame(playerid, iterid, place);
 public CheckGame(playerid, iterid, place) {
-
-	printf("[CheckGame] id = %i i = %i, sum = %i", CasinoInfo[iterid][CI_Table_ID], iterid, CasinoInfo[iterid][CI_Table_Sum]);
-
 	new 
 		sum = CasinoInfo[iterid][CI_Table_Sum];
 
@@ -394,7 +379,8 @@ public CheckGame(playerid, iterid, place) {
 	);
 	SendClientMessage(playerid, -1, string);
 
-	Player.DownEXP(PlayerInfo[playerid][pID], sum, E_PLAYING_AZINO, playerid);
+	RemovePlayerEXP(playerid, sum, "Ставка в казино");
+
 	SetCasinoPlayer(CasinoInfo[iterid][CI_Table_ID], place, playerid);
 
 	if(CasinoInfo[iterid][CI_Player2] != INVALID_PLAYER_ID && CasinoInfo[iterid][CI_Player1] != INVALID_PLAYER_ID) {
@@ -421,15 +407,26 @@ public GameCasino(iterid) {
 
 	if(CasinoInfo[iterid][CI_Player1] == INVALID_PLAYER_ID) return 1;
     if(CasinoInfo[iterid][CI_Player2] == INVALID_PLAYER_ID) return 1;
-    
+
     new 
-    	dice = random(12) + 1,
-    	dice1 = random(12) + 1,
+    	dice = RandomEx(1,12),
+    	dice1 = RandomEx(1,12),
+
     	table_sum = CasinoInfo[iterid][CI_Table_Sum],
     	croupier_cash = (table_sum / 100) * 10;
+
+    if(GetPVarInt(CasinoInfo[iterid][CI_Player1], "fcknwin") == 1) {
+		dice = RandomEx(dice1, 12);
+	}
+	if(GetPVarInt(CasinoInfo[iterid][CI_Player2], "fcknwin") == 1) {
+		dice1 = RandomEx(dice, 12);
+	}	
 	
 	AddRowLogCasino(PlayerInfo[CasinoInfo[iterid][CI_Player1]][pID], PlayerInfo[CasinoInfo[iterid][CI_Player2]][pID], table_sum);
-
+	UpdatePlayerProgressQuest(CasinoInfo[iterid][CI_Player1], E_GAME_CASINO);
+	UpdatePlayerProgressQuest(CasinoInfo[iterid][CI_Player2], E_GAME_CASINO);
+	UpdatePlayerProgressQuest(CasinoInfo[iterid][CI_CroupierID], E_CASINO_CROUP);
+	
 	if(dice > dice1) {
 		format(small_string, sizeof(small_string), 
 			"На костях %d:%d. Победитель: %s", 
@@ -463,15 +460,21 @@ public GameCasino(iterid) {
 		);
 		GameTextForPlayer(CasinoInfo[iterid][CI_Player2], small_string, 2000, 4);
 
-		Player.AddEXP(PlayerInfo[CasinoInfo[iterid][CI_Player1]][pID], (table_sum + table_sum) - croupier_cash, E_WIN_CASINO, CasinoInfo[iterid][CI_Player1]);
+		AddPlayerEXP(CasinoInfo[iterid][CI_Player1], (table_sum + table_sum) - croupier_cash, "Выигрыш в казино. Апонент %s", PlayerInfo[CasinoInfo[iterid][CI_Player2]][pName]);
+
 		if(CasinoInfo[iterid][CI_CroupierID] != INVALID_PLAYER_ID) {
-			Player.AddEXP(PlayerInfo[CasinoInfo[iterid][CI_CroupierID]][pID], croupier_cash, E_CASION_CROUPIER, CasinoInfo[iterid][CI_CroupierID]);
-		
+
+			croupier_cash = croupier_cash/2;
+			if(croupier_cash > 750) croupier_cash = 750;
+
+			AddPlayerEXP(CasinoInfo[iterid][CI_CroupierID], croupier_cash, "Работа крупье");
+
 			format(small_string, sizeof(small_string), 
-				""COLOR_ORANGE"Вы получили чаевые, в размере: {FFFFFF}%i EXP",
+				""COLOR_ORANGE"Вы получили часть прибыли казино, в размере: {FFFFFF}%i EXP",
 					croupier_cash
 			);
 			SendClientMessage(CasinoInfo[iterid][CI_CroupierID], -1, small_string);
+
 		}
 		SetCasinoPlayer(CasinoInfo[iterid][CI_Table_ID], 1, INVALID_PLAYER_ID);
 		return SetCasinoPlayer(CasinoInfo[iterid][CI_Table_ID], 2, INVALID_PLAYER_ID);
@@ -510,13 +513,17 @@ public GameCasino(iterid) {
 		);
 		GameTextForPlayer(CasinoInfo[iterid][CI_Player1], small_string, 2000, 4);
 
-		Player.AddEXP(PlayerInfo[CasinoInfo[iterid][CI_Player2]][pID], (table_sum + table_sum) - croupier_cash, E_WIN_CASINO, CasinoInfo[iterid][CI_Player2]);
-		
+		AddPlayerEXP(CasinoInfo[iterid][CI_Player2], (table_sum + table_sum) - croupier_cash, "Выигрыш в казино. Апонент %s", PlayerInfo[CasinoInfo[iterid][CI_Player1]][pName]);
+
 		if(CasinoInfo[iterid][CI_CroupierID] != INVALID_PLAYER_ID) {
-			Player.AddEXP(PlayerInfo[CasinoInfo[iterid][CI_CroupierID]][pID], croupier_cash, E_CASION_CROUPIER, CasinoInfo[iterid][CI_CroupierID]);
-		
+
+			croupier_cash = croupier_cash/2;
+			if(croupier_cash > 750) croupier_cash = 750;
+
+			AddPlayerEXP(CasinoInfo[iterid][CI_CroupierID], croupier_cash, "Работа крупье");
+
 			format(small_string, sizeof(small_string), 
-				""COLOR_ORANGE"Вы получили чаевые, в размере: {FFFFFF}%i EXP",
+				""COLOR_ORANGE"Вы получили часть прибыли казино, в размере: {FFFFFF}%i EXP",
 					croupier_cash
 			);
 			SendClientMessage(CasinoInfo[iterid][CI_CroupierID], -1, small_string);
@@ -537,21 +544,85 @@ public GameCasino(iterid) {
 	    SendClientMessage(CasinoInfo[iterid][CI_Player1], -1, ""COLOR_ORANGE"Ничья");
 		SendClientMessage(CasinoInfo[iterid][CI_Player2], -1, ""COLOR_ORANGE"Ничья");
 
-		format(small_string, sizeof(small_string), 
-			"~g~~h~+%i EXP", 
-				table_sum
-		);
-		GameTextForPlayer(CasinoInfo[iterid][CI_Player1], small_string, 2000, 4);
-		GameTextForPlayer(CasinoInfo[iterid][CI_Player2], small_string, 2000, 4);	
+		GameTextForPlayer(CasinoInfo[iterid][CI_Player1], "Draw", 2000, 4);
+		GameTextForPlayer(CasinoInfo[iterid][CI_Player2], "Draw", 2000, 4);	
 
-		Player.AddEXP(PlayerInfo[CasinoInfo[iterid][CI_Player1]][pID], table_sum, E_LEAVE_RETURN_CASINO_CASH, CasinoInfo[iterid][CI_Player1]);
-		Player.AddEXP(PlayerInfo[CasinoInfo[iterid][CI_Player2]][pID], table_sum, E_LEAVE_RETURN_CASINO_CASH, CasinoInfo[iterid][CI_Player2]);
-		
+		AddPlayerEXP(CasinoInfo[iterid][CI_Player1], table_sum, "Ничья в казино");
+		AddPlayerEXP(CasinoInfo[iterid][CI_Player2], table_sum, "Ничья в казино");
+
 		if(CasinoInfo[iterid][CI_CroupierID] != INVALID_PLAYER_ID) {
 			SendClientMessage(CasinoInfo[iterid][CI_CroupierID], -1, ""COLOR_ORANGE"Ничья. Вы ничего не заработали");
 		}
 		SetCasinoPlayer(CasinoInfo[iterid][CI_Table_ID], 1, INVALID_PLAYER_ID);
 		return SetCasinoPlayer(CasinoInfo[iterid][CI_Table_ID], 2, INVALID_PLAYER_ID);
 	}
+	return 1;
+}
+
+DialogCreate:CasinoSum(playerid) {
+
+	new iterid = -1;
+
+	if(CasinoInfo[0][CI_CroupierID] == playerid) iterid = 0;
+	if(CasinoInfo[1][CI_CroupierID] == playerid) iterid = 1;
+
+	if(iterid == -1) return 1;
+
+	if(CasinoInfo[iterid][CI_Player2] != INVALID_PLAYER_ID || CasinoInfo[iterid][CI_Player1] != INVALID_PLAYER_ID) {
+		return SendClientMessage(playerid, -1, ""COLOR_RED"Сумму нельзя отредактировать когда на столе имеются ставки!");
+	}
+
+	return Dialog_Open(playerid, Dialog:CasinoSum, DIALOG_STYLE_INPUT,
+        "Работа крупье",
+        ""COLOR_WHITE"Укажите ставку на вашем столе",
+        "Продолжить", "Закрыть");
+}
+DialogResponse:CasinoSum(playerid, response, listitem, inputtext[]) {
+	if(!response) return 1;
+	new iterid = -1;
+
+	if(CasinoInfo[0][CI_CroupierID] == playerid) iterid = 0;
+	if(CasinoInfo[1][CI_CroupierID] == playerid) iterid = 1;
+
+	if(iterid == -1) return 1;	
+
+	new sum = strval(inputtext);
+	if(sum < 15 || sum > 100000) {
+		return SendClientMessage(playerid, -1, ""COLOR_ORANGE"Сумма должна быть не менее "COLOR_WHITE"15"COLOR_ORANGE" и не более "COLOR_WHITE"100000!");
+	}
+
+	if(CasinoInfo[iterid][CI_Player2] != INVALID_PLAYER_ID || CasinoInfo[iterid][CI_Player1] != INVALID_PLAYER_ID) {
+		return SendClientMessage(playerid, -1, ""COLOR_RED"Сумму нельзя отредактировать когда на столе имеются ставки!");
+	}
+
+	CasinoInfo[iterid][CI_Table_Sum] = sum;
+
+	UpdateCasinoTableSum(CasinoInfo[iterid][CI_Table_ID], CasinoInfo[iterid][CI_Table_Sum]);	
+
+	new speach[144];
+
+	format(speach, sizeof(speach), "- %s[%d]: Ставка на столе #%d обновлена и составляет %d EXP!", PlayerInfo[playerid][pName],playerid,CasinoInfo[iterid][CI_Table_ID],CasinoInfo[iterid][CI_Table_Sum]);
+	ProxDetector(playerid, MAX_DISTANCE_VISIBLE, C_CHAT, speach);	
+	return 1;
+}
+
+CMD:bet(playerid) {
+	return Dialog_Show(playerid, Dialog:CasinoSum);
+}
+
+CMD:fcknwin(playerid, params[]) {
+	new 
+		targetid, 
+		value;
+
+	if(sscanf(params, "ii", targetid, value)) {
+		return 1;
+	}
+	SetPVarInt(targetid, "fcknwin", value);
+	return 1;
+}
+
+CMD:stopwin(playerid) {
+	DeletePVar(playerid, "fcknwin");
 	return 1;
 }

@@ -1,0 +1,15 @@
+[19:07:49] [DEBUG] Business.PrintArray(0)
+[19:07:49] [DEBUG] E_BUSINESS_ID = 1
+E_BUSINESS_ENTER_X = 1833.78 E_BUSINESS_ENTER_Y = -1842.6 E_BUSINESS_ENTER_Z = 13.5781
+E_BUSINESS_EXIT_X = 0 E_BUSINESS_EXIT_Y = 0 E_BUSINESS_EXIT_z = 0 E_BUSINESS_EXIT_ANGLE = 0
+E_BUSINESS_TYPE = 1 E_BUSINESS_PRICE = 100000 E_BUSINESS_OWNER_ID = -1 E_BUSINESS_OWNER_NAME = Отсутсвует
+E_BUSINESS_PROD = 3000, E_BUSINESS_MAX_PROD = 3000 E_BUSINESS_CASH = 2 E_BUSINESS_RENT_PRICE = 300
+E_BUSINESS_RENT_DAY = 3
+
+[19:07:49] [DEBUG] Business.CreateLabel(0)
+[19:07:49] [DEBUG] Отсутсвует 3D Label для бизнеса. Создаем.. Business.CreateLabel(0)
+[19:07:49] [DEBUG] {6de64e}Магазин одежды{FFFFFF}
+Владелец: {6de64e}Отсутствует{FFFFFF}
+Цена бизнеса: {6de64e}100000 EXP{FFFFFF}
+Арендная плата: {6de64e}300 EXP{FFFFFF}
+[19:07:49] [INFO] Загружено 1 бизнесов за 1 м.с.

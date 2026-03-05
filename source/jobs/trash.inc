@@ -132,7 +132,7 @@ public Trash_OP_EnterDynamicRaceCP(playerid, checkpointid) {
 		if(GetPlayerTrashCount(playerid) >= 5) {
 			new pay = RandomEx(80, 115);
 		  	AddPlayerEXP(playerid, pay);
-		  	Player.AddEXP(PlayerInfo[playerid][pID], pay, E_JOB_DRIVER_TRASH, playerid);
+
 		  	SendClientMessage(playerid, -1, ""COLOR_BLUE"Мусоровоз разгружен.");
 		  	va_SendClientMessage(playerid, -1, ""COLOR_GREEN"Рабочий день завершен. Ваша зарплата: {FFFFFF}+%d EXP", pay);
 			

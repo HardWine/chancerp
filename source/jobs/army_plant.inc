@@ -91,7 +91,7 @@ public Army_OnGameModeInit() {
 		//data[1] = i;
 		//Streamer_SetArrayData(STREAMER_TYPE_PICKUP, ArmyPlant[i][AP_Table_Checkpoint], E_STREAMER_EXTRA_ID, data, 2);
 
-		ArmyPlant[i][AP_Gun_ObjectID] = CreateDynamicObject(356, 
+		ArmyPlant[i][AP_Gun_ObjectID] = CreateDynamicObject(1654, 
 			ArmyPlant[i][AP_Gun_X], ArmyPlant[i][AP_Gun_Y], ArmyPlant[i][AP_Gun_Z] - 10.00, 
 			ArmyPlant[i][AP_Gun_RX], ArmyPlant[i][AP_Gun_RY], ArmyPlant[i][AP_Gun_RZ], 
 			ArmyPlant[i][AP_Table_World], ArmyPlant[i][AP_Table_Inter]
@@ -229,10 +229,15 @@ public Army_OP_PickUpDynamicPickup(playerid, pickupid) {
 
 	} else if(pickupid == army_pickup[3]) {
 		if(GetPlayerFraction(playerid) != FRACTION_ARMY) {
-			SendClientMessage(playerid, -1, "Подработка доступна только для военных.");
+			SendClientMessage(playerid, -1, ""COLOR_RED"Подработка доступна только для военных");
 			return 1;
 		}
-
+		if(PlayerInfo[playerid][pRank] < 3) return SendClientMessage(playerid, -1, ""COLOR_RED"Работа доступна только после достижения 3 ранга");
+		if(GetPlayerJobDayStatus(playerid) == false)
+		{
+			return SendClientMessage(playerid, -1, MSG_START_JOB_DAY);
+		}
+		
 		if(GetPVarInt(playerid, "job_army_plant") == 1) {
 			if(IsPlayerAttachedObjectSlotUsed(playerid, 3)) {
 				RemovePlayerAttachedObject(playerid, 3);
@@ -257,7 +262,7 @@ public Army_OP_PickUpDynamicPickup(playerid, pickupid) {
 			SetPlayerSkin(playerid, 191);
 		}
 		SetPVarInt(playerid, "job_army_plant", 1);
-		SendClientMessage(playerid, -1, ""COLOR_GREEN"Вы начали подработку на военном заводе. Для начала работы, отправляетесь к свободному столу.");
+		SendClientMessage(playerid, -1, ""COLOR_GREEN"Вы начали подработку на военном заводе. Для начала работы, отправляетесь к свободному столу");
 		SetPlayerChatBubble(playerid, 
 			(PlayerInfo[playerid][pSex] == 0) ? ("начал работу") : ("начала работу"), 
 			0x000000AA, MAX_DISTANCE_VISIBLE, 2000
@@ -271,7 +276,7 @@ public Army_OP_PickUpDynamicPickup(playerid, pickupid) {
 						arrayid = i;
 
 					if(ArmyPlant[arrayid][AP_Table_PlayerID] != INVALID_PLAYER_ID) {
-						return SendClientMessage(playerid, -1, ""COLOR_RED"Этот столик занят другим игроком.");
+						return SendClientMessage(playerid, -1, ""COLOR_RED"Этот столик занят другим игроком");
 					}
 
 					Streamer_SetFloatData(STREAMER_TYPE_OBJECT, ArmyPlant[arrayid][AP_Gun_ObjectID], E_STREAMER_Z, 1044.1250);
@@ -282,18 +287,21 @@ public Army_OP_PickUpDynamicPickup(playerid, pickupid) {
 					SetPlayerFacingAngle(playerid, ArmyPlant[arrayid][AP_Table_Angle]);
 					SetCameraBehindPlayer(playerid);
 
-					TogglePlayerControllable(playerid, false);
+					//TogglePlayerControllable(playerid, false);
 					ApplyAnimation(playerid, "OTB", "BETSLP_LOOP", 10.1, 1, 1, 1, 1, 0);
 					SetPVarInt(playerid, "fix_plant", 1);
+					SetPVarInt(playerid, "MinusTime", 10);
 					PlayerArmyJonPlant[playerid] = SetTimerEx("JobPlant", 10_000, false, "ii", playerid, arrayid);
 					GameTextForPlayer(playerid, "~g~~h~WAITING", 10_250, 4);
 					return 1;
 				}
 			}
 		}
-		if(GetPVarInt(playerid, "fix_plant") == 1) {
+		if(GetPVarInt(playerid, "fix_plant") == 2) {
 			if(pickupid == army_warehouse) {
-				SendClientMessage(playerid, -1, ""COLOR_GREEN"Вы отнесли готовый продукт на склад.");
+				SendClientMessage(playerid, -1, ""COLOR_GREEN"Вы отнесли готовый продукт на склад");
+
+				AddPlayerAchievement(playerid, E_WEAPON_SUPPLY);
 				
 				if(IsPlayerAttachedObjectSlotUsed(playerid, 3)) {
 					RemovePlayerAttachedObject(playerid, 3);
@@ -301,6 +309,7 @@ public Army_OP_PickUpDynamicPickup(playerid, pickupid) {
 				ClearPlayerAnimation(playerid);
 
 				new sum = random(3) + 2;
+	
 				new active_box = GetPVarInt(playerid, "box_army_plant");
 
 				active_box = active_box + 1;
@@ -311,16 +320,22 @@ public Army_OP_PickUpDynamicPickup(playerid, pickupid) {
 				}
 				SetPVarInt(playerid, "box_army_plant", active_box);
 
-				format(small_string, sizeof(small_string), "~g~~h~+%d EXP~n~TO KARMA UP %i BOX", sum, 25 - active_box);
+				format(small_string, sizeof(small_string), "~g~~h~+%d EXP", sum);
 				GameTextForPlayer(playerid, small_string, 1_250, 4);
 				DeletePVar(playerid, "fix_plant");
-				Player.AddEXP(PlayerInfo[playerid][pID], sum, E_JOB_ARMY_PLANT, playerid);
+				AddPlayerEXP(playerid, sum, "Работа на военном заводе");
+
 				mysql_format(database, 
 					small_string, sizeof(small_string), 
 					"UPDATE players SET `ArmyBox`= `ArmyBox` + 1 WHERE ID=%i LIMIT 1", 
 						GetPlayerAccountID(playerid)
 				);
 				mysql_pquery(database, small_string);
+				switch(random(3)) {
+					case 0: IncreaseStatus(playerid, 1);
+					case 1: return 1;
+					case 2: return 1;
+				}
 				return 1;
 			}
 		}
@@ -352,7 +367,7 @@ public Army_OnPlayerLeaveDynArea(playerid, STREAMER_TAG_AREA areaid) {
 DialogCreate:DIALOG_ARMY_PLANT_INFO(playerid) {
 	return Dialog_Open(playerid, Dialog:DIALOG_ARMY_PLANT_INFO, DIALOG_STYLE_MSGBOX,
 		!""COLOR_BLUE"Подработка для солдат",
-		!""COLOR_WHITE"На данной работе вам предстоит собирать\nоружие для военных сил армии штата San Andreas.\nВы будете повышать свою законопослушность за каждые 25 перенесенных ящиков",
+		!""COLOR_WHITE"На данной работе вам предстоит собирать оружие для\nвоенных сил армии штата San Andreas. Вы будете повышать\nсвою законопослушность "COLOR_GREEN"за каждые 25 перенесенных ящиков",
 		!"Закрыть", ""
 	);
 }
@@ -375,66 +390,14 @@ public JobPlant(playerid, tableid) {
 	ClearPlayerAnimation(playerid);
 	TogglePlayerControllable(playerid, true);
 
-	SendClientMessage(playerid, -1, ""COLOR_GREEN"Отнесите готовый продукт на склад.");
+	SendClientMessage(playerid, -1, ""COLOR_GREEN"Отнесите готовый продукт на склад");
+
+	SetPVarInt(playerid, "fix_plant", 2);
 
 	if(!IsPlayerAttachedObjectSlotUsed(playerid, 3)) {
 		SetPlayerAttachedObject(playerid, 3, 2969, 1, 0.075578, 0.407083, 0.000000, 1.248928, 97.393852, 359.645050, 1.000000, 1.000000, 1.000000);
 	}
-	ApplyAnimation(playerid, !"CARRY", !"crry_prtial", 4.0, 1, 0, 0, 1, 1, 1);
+	//ApplyAnimation(playerid, !"CARRY", !"crry_prtial", 4.0, 1, 0, 0, 1, 1, 1);
 	SetPlayerSpecialAction(playerid, SPECIAL_ACTION_CARRY); 
 	return 1;
-}
-
-CMD:getpickup(playerid, params[]) {
-	if(PlayerInfo[playerid][pAdmin] < 5) {
-		return 1;
-	}
-
-	for(new i = 0; i < sizeof(ArmyPlant); i++) {
-		format(small_string, sizeof(small_string), "ID пикапа AP_Table_Checkpoint - %i", ArmyPlant[i][AP_Table_Checkpoint]);
-		SendClientMessage(playerid, -1, small_string);
-	}
-
-	format(small_string, sizeof(small_string), "ID пикапа army_warehouse - %i", army_warehouse);
-	SendClientMessage(playerid, -1, small_string);
-	format(small_string, sizeof(small_string), "ID пикапа army_pickup[0] - %i", army_pickup[0]);
-	SendClientMessage(playerid, -1, small_string);
-	format(small_string, sizeof(small_string), "ID пикапа army_pickup[1] - %i", army_pickup[1]);
-	SendClientMessage(playerid, -1, small_string);
-	format(small_string, sizeof(small_string), "ID пикапа army_pickup[2] - %i", army_pickup[2]);
-	SendClientMessage(playerid, -1, small_string);
-	format(small_string, sizeof(small_string), "ID пикапа army_pickup[3] - %i", army_pickup[3]);
-	return SendClientMessage(playerid, -1, small_string);
-}
-
-CMD:streamer_setint(playerid, params[]) {
-	if(PlayerInfo[playerid][pAdmin] < 5) {
-		return 1;
-	}
-
-	new 
-		type, id, data, value;
-
-	if(sscanf(params, "iiii", type, id, data, value)) {
-		return SendClientMessage(playerid, -1, "Используйте: /streamer_setint [Тип] [ID] [Данные] [Значение]");
-	}
-
-	Streamer_SetIntData(type, id, data, value);
-	return SendClientMessage(playerid, -1, "Готово");
-}
-
-CMD:streamer_setfloat(playerid, params[]) {
-	if(PlayerInfo[playerid][pAdmin] < 5) {
-		return 1;
-	}
-
-	new 
-		type, id, data, Float: value;
-
-	if(sscanf(params, "iiif", type, id, data, value)) {
-		return SendClientMessage(playerid, -1, "Используйте: /streamer_setfloat [Тип] [ID] [Данные] [Значение]");
-	}
-
-	Streamer_SetFloatData(type, id, data, value);
-	return SendClientMessage(playerid, -1, "Готово");
 }
