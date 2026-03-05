@@ -1,0 +1,44 @@
+# compiled pawn
+*.amx
+*.lst
+*.dll
+
+
+# logs
+server_log.txt
+crashinfo.txt
+logs/
+log/
+
+# fs
+filterscripts/
+
+# plugins
+plugins/
+
+# mysql logs
+mysql_log.txt
+
+# temporary files
+*.tmp
+*.temp
+
+# windows
+Thumbs.db
+desktop.ini
+
+# vscode
+.vscode/
+
+# node
+node_modules/
+
+# cache
+*.cache
+
+# build files
+pawno/output/
+
+# backups
+*.bak
+*.old
